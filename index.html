@@ -2022,8 +2022,8 @@ function ecoResult(g){
 var LINK_GIFT=50;
 function inboxList(){if(!Array.isArray(ECO.inbox))ECO.inbox=[];return ECO.inbox;}
 function inboxUnread(){return inboxList().filter(function(m){return !m.read;}).length;}
-function inboxAdd(title,body,kind){
-  var L=inboxList();L.unshift({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),t:Date.now(),title:String(title||'Mesaj').slice(0,80),body:String(body||'').slice(0,600),kind:kind||'sys',read:false});
+function inboxAdd(title,body,kind,by){
+  var L=inboxList();L.unshift({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),t:Date.now(),title:String(title||'Mesaj').slice(0,80),body:String(body||'').slice(0,600),kind:kind||'sys',by:by?String(by).slice(0,40):'',read:false});
   if(L.length>60)L.length=60;saveEco();
 }
 function inboxBtn(){var n=inboxUnread();return '<button type="button" class="inbx" data-nav="inbox" aria-label="Mesajlar"><span class="inbx-i"></span>'+(n?'<i class="inbx-n">'+(n>9?'9+':n)+'</i>':'')+'</button>';}
@@ -2032,7 +2032,7 @@ function inboxView(){
   var h=topBar('📬 Mesajlar',true);
   if(!L.length)h+='<div class="eco" style="text-align:center;padding:30px 12px"><div style="font-size:38px">📭</div><small>Hələ mesaj yoxdur.<br>Admin mesajları, hədiyyələr və bildirişlər burada görünəcək.</small></div>';
   else{
-    h+=L.map(function(m){return '<div class="eco inbx-card'+(m.read?'':' new')+'"><div class="erow"><b>'+(ic[m.kind]||'🔔')+' '+esc(m.title)+'</b>'+(m.read?'':'<span class="inbx-new">YENİ</span>')+'</div><small style="white-space:pre-wrap">'+esc(m.body)+'</small><small style="opacity:.6">'+new Date(m.t).toLocaleString('az')+'</small></div>';}).join('');
+    h+=L.map(function(m){return '<div class="eco inbx-card'+(m.read?'':' new')+'"><div class="erow"><b>'+(ic[m.kind]||'🔔')+' '+esc(m.title)+'</b>'+(m.read?'':'<span class="inbx-new">YENİ</span>')+'</div>'+(m.by?'<small style="display:flex;align-items:center;gap:5px"><span style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#1d9bf0;color:#fff;font-size:10px;font-weight:700">✓</span><b>'+esc(m.by)+'</b></small>':'')+'<small style="white-space:pre-wrap">'+esc(m.body)+'</small><small style="opacity:.6">'+new Date(m.t).toLocaleString('az')+'</small></div>';}).join('');
     h+='<button type="button" class="btn ghost sm" data-inbx="clear">🗑 Hamısını təmizlə</button>';
   }
   inboxList().forEach(function(m){m.read=true;});saveEco();
@@ -2386,7 +2386,7 @@ function grantWatch(){
     if(!INW)INW=fbDb.collection('inbox').doc(ECO.id).collection('items').where('read','==',false).onSnapshot(function(sn){
       sn.forEach(function(d){
         var x=d.data()||{};
-        if(!admSeen('i:'+d.id)){inboxAdd(x.title||'Mesaj',x.body||'',x.kind==='dm'?'dm':'mail');toast('📬 '+(x.title||'Mesaj')+': '+(x.body||''),9000,true);saveEco();}
+        if(!admSeen('i:'+d.id)){inboxAdd(x.title||'Mesaj',x.body||'',x.kind==='dm'?'dm':'mail',x.by);toast('📬 '+(x.title||'Mesaj')+': '+(x.body||''),9000,true);saveEco();}
         d.ref.update({read:true,readAt:FV.serverTimestamp()}).catch(function(){});
       });
     },function(){INW=null;});
