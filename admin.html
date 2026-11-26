@@ -1,135 +1,23 @@
-<!doctype html>
-<html lang="az"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOM BOM · Admin</title>
+<!doctype html><html lang="az"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>BOM BOM · Admin</title>
 <style>
-:root{--bg:#07101f;--card:#0e1d33;--bd:#223a5c;--tx:#eaf2ff;--mu:#8fa6c8;--pr:#3eb5ff;--ok:#22c55e;--er:#ef4444}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;position:sticky;top:0;background:var(--bg);z-index:5;border-bottom:1px solid var(--bd)}
-header small{color:var(--mu)}
-nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;position:sticky;top:50px;background:var(--bg);z-index:4}
-nav button{flex:0 0 auto;padding:8px 12px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-size:13px}
-nav button.on{background:var(--pr);color:#032;border-color:var(--pr);font-weight:700}
-main{padding:6px 12px 40px;max-width:560px;margin:auto}
-.c{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px;margin:10px 0;display:flex;flex-direction:column;gap:8px}
-.c h3{margin:0;font-size:15px}.mu{color:var(--mu);font-size:12px}
-input,textarea,select{width:100%;padding:11px;border-radius:12px;border:1px solid var(--bd);background:#06121f;color:var(--tx);font-size:16px;font-family:inherit}
-input[type=checkbox],input[type=radio]{width:auto}label{display:flex;gap:8px;align-items:center;font-size:14px}
-textarea{min-height:90px}
-button.b{padding:11px 14px;border-radius:12px;border:0;background:var(--pr);color:#032;font-weight:700;font-size:14px}
-button.g{background:transparent;border:1px solid var(--bd);color:var(--tx)}button.d{background:var(--er);color:#fff}
-.r{display:flex;gap:8px;flex-wrap:wrap}.r>*{flex:1 1 120px}
-.ch{display:flex;gap:6px;flex-wrap:wrap}.ch button{padding:6px 10px;border-radius:999px;border:1px solid var(--bd);background:transparent;color:var(--tx)}
-pre{margin:0;white-space:pre-wrap;word-break:break-all;font-size:12px;background:#06121f;padding:8px;border-radius:10px;max-height:220px;overflow:auto}
-.li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--bd);font-size:13px}
-.li>span{min-width:0;overflow-wrap:anywhere}
-#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#000c;color:#fff;padding:10px 16px;border-radius:12px;display:none;z-index:9;max-width:90vw}
-</style></head><body>
-<header><b>🛠️ BOM BOM · Admin</b><small id="who"></small></header>
-<div id="gate" style="padding:24px 14px;max-width:420px;margin:auto"></div>
-<nav id="nav" hidden></nav><main id="v" hidden></main><div id="toast"></div>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+:root{color-scheme:dark;--bg:#07101f;--card:#0e1d33;--bd:#223a5c;--tx:#eaf2ff;--mu:#8fa6c8;--pr:#3eb5ff;--er:#ef4444}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui;padding:env(safe-area-inset-top) 12px 30px}main{max-width:560px;margin:auto}header{position:sticky;top:0;background:var(--bg);padding:14px 0;border-bottom:1px solid var(--bd);z-index:2;display:flex;justify-content:space-between;gap:10px}h2{font-size:18px;margin:0}.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;margin:12px 0}input,textarea{width:100%;padding:12px;border-radius:11px;border:1px solid var(--bd);background:#06121f;color:var(--tx);font:inherit;margin:6px 0}button{padding:11px 14px;border:0;border-radius:11px;background:var(--pr);color:#032;font-weight:700;margin:4px 4px 4px 0}button.alt{background:transparent;border:1px solid var(--bd);color:var(--tx)}small,.muted{color:var(--mu)}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1 1 120px}#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#000d;padding:12px 16px;border-radius:12px;display:none;max-width:90vw}.hidden{display:none}.result{border-top:1px solid var(--bd);padding:10px 0;overflow-wrap:anywhere}
+</style></head><body><main><header><h2>🛠️ BOM BOM · Admin</h2><small id="who"></small></header><section id="gate" class="card"><p>Admin girişi</p><button id="login">Google ilə daxil ol</button></section><section id="panel" class="hidden">
+<div class="card"><h3>Oyunçu axtarışı və jeton</h3><input id="pid" maxlength="9" placeholder="Oyunçu ID: ABCD-1234"><button id="find">Oyunçunu yoxla</button><div id="profile" class="muted"></div></div>
+<div class="card"><h3>🪙 Jeton göndər</h3><input id="tid" maxlength="9" placeholder="Oyunçu ID: ABCD-1234"><div class="row"><input id="amount" type="number" min="1" max="1000000" placeholder="Jeton sayı"><input id="msg" maxlength="200" placeholder="Qısa qeyd (istəyə bağlı)"></div><button id="send">Jeton göndər</button><p class="muted">Jeton server tərəfindən oyunçunun bulud balansına əlavə olunur. Oyunçu oyunu açanda balans yenilənir.</p></div>
+<div class="card"><h3>💬 Oyun daxili mesaj</h3><input id="mid" maxlength="9" placeholder="Oyunçu ID"><textarea id="body" maxlength="500" placeholder="Mesaj"></textarea><button id="sendmsg">Mesaj göndər</button></div>
+<div class="card"><button class="alt" id="logout">Çıxış</button><p class="muted">Bu panel yalnız Firestore admins kolleksiyasında role=admin olan hesablar üçündür.</p></div></section></main><div id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
-/* Kolleksiyalar: admins/{uid} · players · playerBadges/{ID}{admin,verified} · grants/{ID}/items · inbox/{ID}/items
-   broadcasts/{id}+reads · adminLog · mail (Firebase "Trigger Email from Firestore" extension qurulmalıdır) */
 firebase.initializeApp({apiKey:"AIzaSyCkWAHogLmh-uuCMRtl3CjT1YAE90eyh2U",authDomain:"gizlimina.firebaseapp.com",projectId:"gizlimina",storageBucket:"gizlimina.firebasestorage.app",messagingSenderId:"545882517556",appId:"1:545882517556:web:f1dce30b0878e676605a61"});
-const au=firebase.auth(),db=firebase.firestore(),$=s=>document.querySelector(s);
-const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.k);toast.k=setTimeout(()=>t.style.display='none',2800)};
-const ID_RE=/^[A-Z0-9]{4}-[A-Z0-9]{4}$/,fmtId=v=>{v=v.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);return v.length>4?v.slice(0,4)+'-'+v.slice(4):v};
-const TS=()=>firebase.firestore.FieldValue.serverTimestamp(),dt=t=>t&&t.toMillis?new Date(t.toMillis()).toLocaleString('az'):'';
-const T=[['pl','👥','Oyunçular'],['tk','🪙','Jeton'],['dm','💬','Şəxsi mesaj'],['mb','📬','E-poçt (oyun)'],['xm','📧','Xarici e-poçt'],['ad','👑','Admin hüquqları'],['bl','✔️','Mavi nişan'],['hs','🧾','Tarixçə']];
-let tab='pl',user=null;
-const gate=h=>{$('#gate').innerHTML=h;$('#gate').hidden=false;$('#nav').hidden=$('#v').hidden=true};
-gate('<div class="c"><h3>Admin girişi</h3><span class="mu">Yalnız admin hesabı ilə.</span><button class="b" data-a="login">🌐 Google ilə daxil ol</button></div>');
-au.onAuthStateChanged(async u=>{if(!u)return;user=u;$('#who').textContent=u.displayName||u.email||'';
- try{if(!(await db.collection('admins').doc(u.uid).get()).exists){gate('<div class="c"><h3>⛔ İcazə yoxdur</h3><span class="mu">UID: '+esc(u.uid)+'<br>Bu UID-ni Firestore-da <b>admins</b> kolleksiyasına sənəd ID-si kimi əlavə et.</span><button class="b g" data-a="out">Çıx</button></div>');return}}
- catch(e){gate('<div class="c"><h3>Xəta</h3><span class="mu">'+esc(e.message)+'</span></div>');return}
- $('#gate').hidden=true;$('#nav').hidden=$('#v').hidden=false;
- $('#nav').innerHTML=T.map(t=>`<button data-t="${t[0]}">${t[1]} ${t[2]}</button>`).join('');go(tab)});
-/* ---------- köməkçilər ---------- */
-const log=(type,target,detail)=>db.collection('adminLog').add({type,target:target||'',detail:detail||'',by:user.displayName||user.email||user.uid,uid:user.uid,ts:TS()});
-const val=id=>{const v=$(id).value.trim();if(!ID_RE.test(v)){toast('ID formatı: ABCD-1234');return null}return v};
-const ids=t=>[...new Set((t||'').toUpperCase().split(/[\s,;]+/).filter(x=>ID_RE.test(x)))];
-const idf=(id,ph)=>`<input id="${id}" placeholder="${ph||'Oyunçu ID: ABCD-1234'}" autocapitalize="characters">`;
-const who=async id=>{const d=await db.collection('players').doc(id).get();return d.exists?d.data():null};
-const pname=x=>x?(x.name||x.n||x.displayName||''):'';
-const img=()=>new Promise(r=>{const f=$('#img')&&$('#img').files[0];if(!f)return r('');const i=new Image;i.onload=()=>{const k=Math.min(1,600/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*k;c.height=i.height*k;c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.7))};i.onerror=()=>r('');i.src=URL.createObjectURL(f)});
-const comp=(p)=>`<input id="ttl" placeholder="Başlıq" maxlength="80"><textarea id="txt" placeholder="Mətn..." maxlength="1500"></textarea><input id="img" type="file" accept="image/*"><span class="mu">Şəkil istəyə bağlıdır (avtomatik kiçildilir).</span>`;
-const aud=(allTxt)=>`<label><input type="radio" name="au" value="all" checked> ${allTxt}</label><label><input type="radio" name="au" value="sel"> Seçilmiş oyunçular</label><textarea id="sel" placeholder="ID-lər: ABCD-1234, EFGH-5678 ..." style="min-height:60px"></textarea>`;
-const audv=()=>document.querySelector('input[name=au]:checked').value;
-async function setBadge(id,k,v,label){await db.collection('playerBadges').doc(id).set({[k]:v},{merge:true});await log(label,id,v?'verildi':'geri alındı');toast('✓ Yadda saxlandı')}
-const listBadge=async k=>{const s=await db.collection('playerBadges').where(k,'==',true).limit(100).get();return s.docs.map(d=>`<div class="li"><span>${esc(d.id)}</span><button class="b g" data-a="rv" data-k="${k}" data-i="${esc(d.id)}">Geri al</button></div>`).join('')||'<span class="mu">Yoxdur.</span>'};
-const badgeBox=(k,title,ok,no)=>async()=>`<div class="c"><h3>${title}</h3>${idf('bid')}<div class="r"><button class="b" data-a="bset" data-k="${k}" data-v="1">${ok}</button><button class="b g" data-a="bset" data-k="${k}" data-v="">${no}</button></div></div><div class="c"><h3>Hazırda</h3>${await listBadge(k)}</div>`;
-/* ---------- bölmələr ---------- */
-const V={
-pl:()=>`<div class="c"><h3>👥 Oyunçu axtar</h3>${idf('pid')}<button class="b" data-a="find">Axtar</button></div><div id="out"></div>`,
-tk:async()=>`<div class="c"><h3>🪙 Jeton göndər / çıx</h3>${idf('tid')}<button class="b g" data-a="tchk">Oyunçunu yoxla</button><span id="tn" class="mu"></span>
- <div class="r"><label><input type="radio" name="op" value="1" checked> ➕ Əlavə et</label><label><input type="radio" name="op" value="-1"> ➖ Çıx</label></div>
- <input id="tam" type="number" inputmode="numeric" placeholder="Jeton sayı (1–1000000)"><div class="ch">${[100,500,1000,5000,10000].map(n=>`<button data-a="amt" data-n="${n}">${n}</button>`).join('')}</div>
- <input id="tms" placeholder="Mesaj (istəyə bağlı)" maxlength="200"><button class="b" data-a="mk">🚀 Göndər</button><span class="mu">Jeton oyunçu oyunu açan kimi avtomatik düşür.</span></div>
- <div class="c"><h3>Son jeton əməliyyatları</h3>${await hist('jeton',15)}</div>`,
-dm:async()=>`<div class="c"><h3>💬 Şəxsi mesaj</h3>${idf('did')}<textarea id="dtx" placeholder="Qısa mesaj (maks 200)" maxlength="200"></textarea><button class="b" data-a="dsend">Göndər</button></div><div class="c"><h3>Son mesajlar</h3>${await hist('mesaj',15)}</div>`,
-mb:async()=>`<div class="c"><h3>📬 Oyun daxili e-poçt</h3>${aud('Bütün oyunçular')}${comp()}<button class="b" data-a="msend">Göndər</button><span class="mu">Bayram, elan və yenilik üçün.</span></div>
- <div class="c"><h3>Ümumi göndərişlər (oxunma)</h3>${await bcast()}</div>`,
-xm:async()=>`<div class="c"><h3>📧 Xarici e-poçt</h3>${aud('Razılıq verən bütün oyunçular')}<label><input type="checkbox" id="vac"> Vacib xidməti elan (razılıq tələb olunmur)</label>${comp()}<button class="b" data-a="xsend">Göndər</button><span class="mu">Reklam/yenilik yalnız razılıq verənlərə (<b>mailOk=true</b>) gedir.</span></div>
- <div class="c"><h3>Göndəriş statusu</h3>${await mails()}</div>`,
-ad:badgeBox('admin','👑 Admin hüququ','Admin ver','Geri al'),
-bl:badgeBox('verified','✔️ Mavi təsdiq nişanı','Nişan ver','Geri al'),
-hs:async()=>`<div class="c"><h3>🧾 Əməliyyat tarixçəsi</h3><select id="hf"><option value="">Hamısı</option><option>jeton</option><option>mesaj</option><option>oyun-poçt</option><option>xarici-poçt</option><option>admin-hüquq</option><option>mavi-nişan</option></select><button class="b g" data-a="hf">Filtr</button></div><div class="c" id="hl">${await hist('',60)}</div>`
-};
-async function hist(type,n){let q=db.collection('adminLog');if(type)q=q.where('type','==',type);
- const s=await q.orderBy('ts','desc').limit(n).get().catch(e=>({docs:[],err:e}));if(s.err)return '<span class="mu">Yüklənmədi (indeks lazım ola bilər).</span>';
- return s.docs.map(d=>{const x=d.data();return `<div class="li"><span><b>${esc(x.type)}</b> · ${esc(x.target)}<br>${esc(x.detail)}<br><span class="mu">${esc(x.by)} · ${dt(x.ts)}</span></span>${/mesaj|poçt/.test(x.type)&&ID_RE.test(x.target)?`<button class="b g" data-a="rd" data-i="${esc(x.target)}">Oxunub?</button>`:''}</div>`}).join('')||'<span class="mu">Boşdur.</span>'}
-async function bcast(){const s=await db.collection('broadcasts').orderBy('ts','desc').limit(10).get().catch(()=>null);if(!s)return '<span class="mu">Yoxdur.</span>';
- const rows=await Promise.all(s.docs.map(async d=>{const r=await d.ref.collection('reads').get().catch(()=>({size:0}));const x=d.data();return `<div class="li"><span>${esc(x.title)}<br><span class="mu">${dt(x.ts)}</span></span><b>👁 ${r.size}</b></div>`}));return rows.join('')||'<span class="mu">Yoxdur.</span>'}
-async function mails(){const s=await db.collection('mail').orderBy('meta.ts','desc').limit(25).get().catch(()=>null);if(!s)return '<span class="mu">Yoxdur.</span>';
- return s.docs.map(d=>{const x=d.data(),st=(x.delivery&&x.delivery.state)||'GÖZLƏYİR',ic={SUCCESS:'✅',ERROR:'❌',PROCESSING:'⏳'}[st]||'⏳';return `<div class="li"><span>${esc(x.to)}<br><span class="mu">${esc(x.message&&x.message.subject)} · ${dt(x.meta&&x.meta.ts)}</span></span><b>${ic} ${st}</b></div>`}).join('')||'<span class="mu">Yoxdur.</span>'}
-async function go(t){tab=t;document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
- $('#v').innerHTML='<div class="c mu">Yüklənir…</div>';try{$('#v').innerHTML=await V[t]()}catch(e){$('#v').innerHTML='<div class="c"><h3>Xəta</h3><span class="mu">'+esc(e.message)+'</span></div>'}}
-/* ---------- əməliyyatlar ---------- */
-const A={
-login:()=>au.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>toast(e.message)),
-out:()=>au.signOut().then(()=>location.reload()),
-find:async()=>{const id=val('#pid');if(!id)return;const [p,b]=await Promise.all([who(id),db.collection('playerBadges').doc(id).get()]),bx=b.exists?b.data():{};
- const g=await db.collection('grants').doc(id).collection('items').orderBy('ts','desc').limit(5).get().catch(()=>({docs:[]}));
- $('#out').innerHTML=`<div class="c"><h3>${esc(id)} ${esc(pname(p))}</h3><span class="mu">${p?'Profil tapıldı':'Profil tapılmadı'} · ${bx.admin?'👑 Admin ':''}${bx.verified?'✔️ Mavi nişan':''}</span><pre>${esc(JSON.stringify(p,null,1))}</pre>
- <div class="mu">Son jeton: ${g.docs.map(d=>(d.data().used?'✅':'⏳')+(d.data().a>0?'+':'')+d.data().a).join('  ')||'—'}</div>
- <div class="r"><button class="b" data-a="to" data-i="${id}" data-t="tk">🪙 Jeton</button><button class="b" data-a="to" data-i="${id}" data-t="dm">💬 Mesaj</button><button class="b g" data-a="bq" data-k="admin" data-i="${id}" data-v="${bx.admin?'':'1'}">${bx.admin?'👑 Adminliyi al':'👑 Admin ver'}</button><button class="b g" data-a="bq" data-k="verified" data-i="${id}" data-v="${bx.verified?'':'1'}">${bx.verified?'✔️ Nişanı al':'✔️ Mavi nişan'}</button></div></div>`},
-to:async e=>{await go(e.dataset.t);const f=$(e.dataset.t==='tk'?'#tid':'#did');f.value=e.dataset.i},
-bq:async e=>{await setBadge(e.dataset.i,e.dataset.k,!!e.dataset.v,e.dataset.k==='admin'?'admin-hüquq':'mavi-nişan');$('#pid').value=e.dataset.i;A.find()},
-bset:async e=>{const id=val('#bid');if(!id)return;await setBadge(id,e.dataset.k,!!e.dataset.v,e.dataset.k==='admin'?'admin-hüquq':'mavi-nişan');go(tab)},
-rv:async e=>{await setBadge(e.dataset.i,e.dataset.k,false,e.dataset.k==='admin'?'admin-hüquq':'mavi-nişan');go(tab)},
-amt:e=>{$('#tam').value=e.dataset.n},
-tchk:async()=>{const id=val('#tid');if(!id)return;const p=await who(id);$('#tn').textContent=p?'✅ '+(pname(p)||'Oyunçu tapıldı'):'⚠️ Profil tapılmadı (ID yenə də işləyə bilər)'},
-mk:async()=>{const id=val('#tid');if(!id)return;const n=Math.floor(+$('#tam').value);if(!(n>=1&&n<=1000000))return toast('Say 1–1000000');
- const a=n*(+document.querySelector('input[name=op]:checked').value),msg=$('#tms').value.trim().slice(0,200);
- await db.collection('grants').doc(id).collection('items').add({a,by:(user.displayName||'Admin').slice(0,14),msg,used:false,ts:TS()});
- await log('jeton',id,(a>0?'+':'')+a+' 🪙'+(msg?' · "'+msg+'"':''));toast('✓ '+id+' → '+(a>0?'+':'')+a+' 🪙');go('tk')},
-dsend:async()=>{const id=val('#did'),t=$('#dtx').value.trim();if(!id||!t)return toast('ID və mesaj lazımdır');
- await db.collection('inbox').doc(id).collection('items').add({kind:'dm',title:'💬 Admindən mesaj',body:t.slice(0,200),by:(user.displayName||'Admin').slice(0,14),read:false,ts:TS()});
- await log('mesaj',id,t.slice(0,80));toast('✓ Mesaj göndərildi');go('dm')},
-msend:async()=>{const t=$('#ttl').value.trim(),x=$('#txt').value.trim();if(!t||!x)return toast('Başlıq və mətn lazımdır');const im=await img(),by=(user.displayName||'Admin').slice(0,14);
- if(audv()==='all'){await db.collection('broadcasts').add({title:t,body:x,img:im,by,ts:TS()});await log('oyun-poçt','HAMISI',t)}
- else{const L=ids($('#sel').value);if(!L.length)return toast('Düzgün ID yoxdur');
-  await Promise.all(L.map(id=>db.collection('inbox').doc(id).collection('items').add({kind:'mail',title:t,body:x,img:im,by,read:false,ts:TS()})));
-  await Promise.all(L.map(id=>log('oyun-poçt',id,t)))}
- toast('✓ Göndərildi');go('mb')},
-xsend:async()=>{const t=$('#ttl').value.trim(),x=$('#txt').value.trim();if(!t||!x)return toast('Başlıq və mətn lazımdır');const im=await img(),vac=$('#vac').checked;
- const html='<div style="font-family:sans-serif;max-width:520px">'+(im?'<img src="'+im+'" style="max-width:100%;border-radius:12px">':'')+'<h2>'+esc(t)+'</h2><p>'+esc(x).replace(/\n/g,'<br>')+'</p><hr><small>BOM BOM</small></div>';
- let list=[];
- if(audv()==='all'){const s=await db.collection('users').where('mailOk','==',true).limit(500).get();s.forEach(d=>{const u=d.data();if(u.email)list.push({id:u.pid||d.id,to:u.email})})}
- else{const L=ids($('#sel').value);for(const id of L){const p=await who(id);if(p&&p.email&&(vac||p.mailOk===true))list.push({id,to:p.email})}}
- if(!list.length)return toast('Uyğun e-poçt tapılmadı (razılıq yoxdur?)');
- if(!confirm(list.length+' ünvana göndərilsin?'))return;
- for(let i=0;i<list.length;i+=400){const b=db.batch();list.slice(i,i+400).forEach(r=>b.set(db.collection('mail').doc(),{to:r.to,message:{subject:t,html},meta:{pid:r.id,by:user.uid,ts:TS(),vacib:vac}}));await b.commit()}
- await log('xarici-poçt',audv()==='all'?'HAMISI':list.map(r=>r.id).join(','),t+' ('+list.length+')');toast('✓ '+list.length+' e-poçt növbəyə qoyuldu');go('xm')},
-rd:async e=>{const s=await db.collection('inbox').doc(e.dataset.i).collection('items').orderBy('ts','desc').limit(3).get();toast(s.size?s.docs.map(d=>d.data().read?'👁 oxunub':'📩 oxunmayıb').join(' · '):'Mesaj yoxdur')},
-hf:async()=>{$('#hl').innerHTML=await hist($('#hf').value,60)}
-};
-document.addEventListener('click',e=>{const t=e.target.closest('[data-t]');if(t&&t.closest('#nav'))return go(t.dataset.t);
- const a=e.target.closest('[data-a]');if(a&&A[a.dataset.a])Promise.resolve(A[a.dataset.a](a)).catch(x=>toast(x.message||'Xəta'))});
-document.addEventListener('input',e=>{if(['pid','tid','did','bid'].includes(e.target.id))e.target.value=fmtId(e.target.value)});
+const auth=firebase.auth(),db=firebase.firestore(),$=id=>document.getElementById(id);let admin=null;
+function toast(t){$('toast').textContent=t;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',3000)}
+function fmt(v){v=String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);return v.length>4?v.slice(0,4)+'-'+v.slice(4):v}
+['pid','tid','mid'].forEach(id=>$(id).addEventListener('input',e=>e.target.value=fmt(e.target.value)));
+function valid(id){let v=$(id).value.trim();if(!/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(v)){toast('ID formatı: ABCD-1234');return null}return v}
+$('login').onclick=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>toast(e.message));
+auth.onAuthStateChanged(async u=>{if(!u){admin=null;$('gate').classList.remove('hidden');$('panel').classList.add('hidden');return}try{let d=await db.collection('admins').doc(u.uid).get();if(!d.exists||d.data().role!=='admin'){toast('Bu hesabın admin icazəsi yoxdur');await auth.signOut();return}admin=u;$('who').textContent=u.email||u.uid;$('gate').classList.add('hidden');$('panel').classList.remove('hidden')}catch(e){toast('İcazə yoxlanmadı: '+e.message)}});
+$('find').onclick=async()=>{let id=valid('pid');if(!id)return;try{let [o,w]=await Promise.all([db.collection('playerOwners').doc(id).get(),db.collection('wallets').doc(id).get()]);if(!o.exists){$('profile').textContent='Bu ID hələ oyunçu hesabına bağlanmayıb.';return}let owner=o.data().uid;$('profile').innerHTML='ID: <b>'+id+'</b><br>Hesab əlaqəsi: aktiv<br>Bulud jeton balansı: <b>'+(w.exists?(w.data().balance||0):'hazırlanır')+'</b>'; $('tid').value=id;$('mid').value=id}catch(e){toast(e.message)}};
+$('send').onclick=async()=>{let id=valid('tid'),n=Math.floor(Number($('amount').value));if(!id)return;if(!(n>=1&&n<=1000000)){toast('Jeton sayı 1–1 000 000 aralığında olmalıdır');return}try{let owner=await db.collection('playerOwners').doc(id).get();if(!owner.exists){toast('Oyunçu ID-si tapılmadı və ya hələ buluda bağlanmayıb');return}await db.collection('grants').doc(id).collection('items').add({a:n,msg:$('msg').value.trim().slice(0,200),used:false,createdBy:admin.uid,by:(admin.displayName||admin.email||'Admin').slice(0,60),ts:firebase.firestore.FieldValue.serverTimestamp()});await db.collection('adminLog').add({type:'jeton',target:id,detail:'+'+n,uid:admin.uid,ts:firebase.firestore.FieldValue.serverTimestamp()});toast('Jeton göndərildi. Oyunçu oyunu açanda balansına əlavə olunacaq.');$('amount').value='';$('msg').value=''}catch(e){toast('Göndərilmədi: '+e.message)}};
+$('sendmsg').onclick=async()=>{let id=valid('mid'),body=$('body').value.trim();if(!id||!body)return toast('ID və mesaj daxil et');try{await db.collection('inbox').doc(id).collection('items').add({kind:'dm',title:'💬 Admindən mesaj',body:body.slice(0,500),by:admin.email||'Admin',read:false,ts:firebase.firestore.FieldValue.serverTimestamp()});toast('Mesaj göndərildi');$('body').value=''}catch(e){toast(e.message)}};
+$('logout').onclick=()=>auth.signOut();
 </script></body></html>
