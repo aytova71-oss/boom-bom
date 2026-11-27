@@ -4885,7 +4885,7 @@ function bomNcOwned(){var re=/^c-[0-9a-f]{6}-[0-9a-f]{6}$/;if(!Array.isArray(ECO
 function bomHsl2Hex(h,sa,l){sa/=100;l/=100;var k=function(n){return(n+h/30)%12},a=sa*Math.min(l,1-l),f=function(n){var c=l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));return Math.round(255*c).toString(16).padStart(2,'0');};return'#'+f(0)+f(8)+f(4);}
 function bomNameBlock(){var open=!!C.bomNcOpen,own=bomNcOwned(),h='<div class="eco"><button class="btn" type="button" data-bom-nctoggle>'+(open?'✕ Bağla':'🎨 Özəlləşdir')+'</button></div>';
   if(open)h+=bomNameEditor();
-  if(own.length)h+='<div class="eco"><b>🎨 Aldığın adlar</b><div class="cg tx">'+own.slice().reverse().map(function(id){var m=/^c-([0-9a-f]{6})-([0-9a-f]{6})$/.exec(id),on=ECO.eq.n===id;return'<div class="cos"><div class="cp"><b class="bom-ns-prev" style="background-image:linear-gradient(90deg,#'+m[1]+',#'+m[2]+',#'+m[1]+')">'+esc(profile.name)+'</b></div><button class="btn sm'+(on?'':' ghost')+'" type="button" data-bom-ncown="'+id+'">'+(on?'✔ Seçilib':'Seç')+'</button></div>';}).join('')+'</div><small>Aldığın adlar həmişə qalır. İstədiyin vaxt pulsuz dəyişə bilərsən.</small></div>';
+  if(own.length)h+='<div class="eco"><b>🎨 Aldığın adlar</b><div class="cg tx">'+own.slice().reverse().map(function(id){var m=/^c-([0-9a-f]{6})-([0-9a-f]{6})$/.exec(id),on=ECO.eq.n===id;return'<div class="cos"><div class="cp"><b class="bom-ns-prev" style="background-image:linear-gradient(90deg,#'+m[1]+',#'+m[2]+',#'+m[1]+')">'+esc(profile.name)+'</b></div><button class="btn sm'+(on?'':' ghost')+'" type="button" data-bom-ncown="'+id+'">'+(on?'✔ Seçilib':'Seç')+'</button><button class="btn sm ghost" type="button" data-bom-ncdel="'+id+'">🗑 Sil</button></div>';}).join('')+'</div><small>Aldığın adlar həmişə qalır. İstədiyin vaxt pulsuz dəyişə bilərsən.</small></div>';
   return h;}
 (function(){var st=document.createElement('style');st.textContent='.bom-spec{position:relative;height:150px;border-radius:12px;margin:10px 0;touch-action:none;cursor:crosshair;background:linear-gradient(to bottom,#fff 0%,rgba(255,255,255,0) 50%,rgba(0,0,0,0) 50%,#000 100%),linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)}.bom-spec i{position:absolute;width:22px;height:22px;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #000,inset 0 0 0 1px #000;transform:translate(-50%,-50%);pointer-events:none;display:none}';document.head.appendChild(st);})();
 (function(){var drag=false;function pick(e){var el=document.querySelector('[data-bom-spec]');if(!el)return;var r=el.getBoundingClientRect(),x=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)),y=Math.min(1,Math.max(0,(e.clientY-r.top)/r.height)),l=y<.5?100-y*100:50-(y-.5)*100;C['bomNc'+(C.bomNcSlot||1)]=bomHsl2Hex(x*360,100,l);var d=document.getElementById('bom-spec-dot');if(d){d.style.display='block';d.style.left=x*100+'%';d.style.top=y*100+'%';}bomNcSync();}
@@ -4935,6 +4935,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 function bomBadgeParts(id){badgeHTML({id:id});var b=BADGE_CACHE[id]||{};return{tick:b.verified?'<span class="player-verified-tick" title="Təsdiqlənmiş oyunçu" style="margin:0 6px 0 0">✓</span>':'',adm:b.admin?'<div class="profile-level"><span class="player-admin-tag">ADMIN</span></div>':''};}
 var BVW={last:{},list:[],unsub:null,err:0};
 function bomRecordView(tid){
+  if(ECO.hv)return;
   if(!tid||tid===ECO.id||!fbDb||!fbUser||!playerOwnerReady||!ID_RE.test(String(tid)))return;
   var now=Date.now();if(BVW.last[tid]&&now-BVW.last[tid]<1800000)return;BVW.last[tid]=now;
   fbDb.collection('profileViews').doc(String(tid)).collection('viewers').doc(String(ECO.id)).set({n:String(profile.name||'').slice(0,14),av:String(profile.avatar||''),fr:String(ECO.eq.f||''),ts:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(e){console.warn('Profile view:',e&&e.code||e);});
@@ -4949,14 +4950,53 @@ function bomWatchViews(){
 setInterval(bomWatchViews,5000);
 function bomEyeTop(h){var n=BVW.list.length,b='<button type="button" class="inbx" data-bom-pv aria-label="Profilə baxanlar" style="font-size:18px">👁️'+(n?'<i class="inbx-n">'+(n>9?'9+':n)+'</i>':'')+'</button>';return h.replace('<span class="hdr-r">','<span class="hdr-r">'+b);}
 function pviewsView(){
-  var L=BVW.list,h='<div class="erow"><h2>👁️ Profilə baxanlar</h2></div><div><button class="btn ghost sm" type="button" data-bom-pvback>← Geri</button></div><div class="eco" style="text-align:center;align-items:center"><b style="font-size:30px">'+(L.length>=100?'100+':L.length)+'</b><small>nəfər profilinə baxıb</small></div>';
+  var L=BVW.list,h='<div class="erow"><h2>👁️ Profilə baxanlar</h2></div><div class="row"><button class="btn ghost sm" type="button" data-bom-pvback>← Geri</button><button class="btn ghost sm" type="button" data-bom-pvhide>'+(ECO.hv?'👁️ Baxışlarım görünsün':'🙈 Baxışlarım gizli olsun')+'</button></div><div class="eco" style="text-align:center;align-items:center"><b style="font-size:30px">'+(L.length>=100?'100+':L.length)+'</b><small>nəfər profilinə baxıb</small></div>';
   if(!L.length)return h+'<div class="sub" style="text-align:center;padding:30px 10px">Hələ heç kim baxmayıb.</div>';
   return h+'<div class="card">'+L.map(function(v){return'<div class="frr" style="cursor:default">'+frAv(v)+'<span class="rt"><b>'+bomBadgeParts(v.id).tick+esc(v.n)+'</b>'+((BADGE_CACHE[v.id]||{}).admin?'<small><span class="player-admin-tag">ADMIN</span></small>':'')+'<small>'+(v.ts?frTime(v.ts):'')+'</small></span></div>';}).join('')+'</div>';
 }
-document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-bom-pv],[data-bom-pvback]');if(!b)return;e.stopPropagation();e.preventDefault();C.view=b.hasAttribute('data-bom-pv')?'pviews':'account';render();},true);
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-bom-pv],[data-bom-pvback],[data-bom-pvhide]');if(!b)return;e.stopPropagation();e.preventDefault();if(b.hasAttribute('data-bom-pvhide')){ECO.hv=!ECO.hv;saveEco();toast(ECO.hv?'🙈 Baxışların artıq gizlidir':'👁️ Baxışların görünəcək',2200);render();return;}C.view=b.hasAttribute('data-bom-pv')?'pviews':'account';render();},true);
+
+/* ===== Admin jetonu (əlavə/silmə), ban ===== */
+var BGR={unsub:null,busy:{},err:0};
+function bomWatchGrants(){
+  if(BGR.unsub||BGR.err>=3||!fbDb||!fbUser||!playerOwnerReady||!ECO.id)return;
+  BGR.unsub=fbDb.collection('grants').doc(String(ECO.id)).collection('items').where('used','==',false).limit(20).onSnapshot(function(sn){
+    sn.docs.forEach(function(d){bomApplyGrant(d.ref);});
+  },function(e){BGR.unsub=null;BGR.err++;console.warn('Grants:',e&&e.code||e);});
+}
+function bomApplyGrant(ref){
+  if(BGR.busy[ref.path])return;BGR.busy[ref.path]=1;
+  fbDb.runTransaction(function(tx){return tx.get(ref).then(function(doc){
+    if(!doc.exists)return null;var x=doc.data()||{};if(x.used!==false)return null;
+    var a=Math.trunc(Number(x.a)||0);if(Math.abs(a)>1000000)a=0;
+    tx.update(ref,{used:true,usedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    return{a:a,msg:String(x.msg||'').slice(0,200)};
+  });}).then(function(r){
+    if(!r||!r.a)return;
+    ECO.tokens=Math.max(0,(+ECO.tokens||0)+r.a);saveEco();
+    toast((r.a>0?'🪙 +':'🪙 ')+fmt(r.a)+' jeton',3000,true);
+    inboxAdd(r.a>0?'🪙 Jeton əlavə olundu':'🪙 Jeton silindi',(r.a>0?'+':'')+r.a+' jeton'+(r.msg?'\n'+r.msg:''),'mail','BOM BOM Admin');
+    render();
+  }).catch(function(e){console.warn('Grant apply:',e&&e.code||e);}).then(function(){delete BGR.busy[ref.path];});
+}
+setInterval(bomWatchGrants,5000);
+var BBN={unsub:null,err:0};
+function bomWatchBan(){
+  if(BBN.unsub||BBN.err>=3||!fbDb||!fbUser||!playerOwnerReady||!ECO.id)return;
+  BBN.unsub=fbDb.collection('bans').doc(String(ECO.id)).onSnapshot(function(doc){
+    var el=document.getElementById('bom-ban');
+    if(doc.exists&&doc.data().banned===true){
+      var r=String(doc.data().reason||'').slice(0,200);
+      if(!el){el=document.createElement('div');el.id='bom-ban';el.style.cssText='position:fixed;left:0;top:0;right:0;bottom:0;z-index:99999;background:#050b16;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:12px;font:16px system-ui,sans-serif';document.body.appendChild(el);}
+      el.innerHTML='<div style="font-size:56px">🚫</div><b style="font-size:22px">Hesabın bloklanıb</b><div style="opacity:.85">'+esc(r||'Qaydalar pozulduğu üçün giriş məhdudlaşdırılıb.')+'</div><small style="opacity:.6">ID: '+esc(ECO.id)+'</small>';
+    }else if(el){el.parentNode.removeChild(el);}
+  },function(e){BBN.unsub=null;BBN.err++;console.warn('Ban:',e&&e.code||e);});
+}
+setInterval(bomWatchBan,5000);
 function bomStatTiles(){var s=STATS,tot=(s.w||0)+(s.l||0)+(s.d||0),r=tot?Math.round((s.w||0)/tot*100):0;return'<div class="bom-ptiles"><div><b>'+(s.w||0)+'</b><small>🏆 Qələbə</small></div><div><b>'+(s.l||0)+'</b><small>💀 Məğlubiyyət</small></div><div><b>'+(s.d||0)+'</b><small>🤝 Bərabərlik</small></div><div><b>'+r+'%</b><small>📈 Qələbə %</small></div></div>';}
 document.addEventListener('input',function(e){var i=e.target;if(!i||!i.getAttribute||!i.getAttribute('data-bom-nc'))return;C['bomNc'+i.getAttribute('data-bom-nc')]=i.value;var p=document.getElementById('bom-ns-prev');if(p)p.style.backgroundImage='linear-gradient(90deg,'+(C.bomNc1||'#ff4d4d')+','+(C.bomNc2||'#4d7cff')+','+(C.bomNc1||'#ff4d4d')+')';},true);
-document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-bom-nctoggle],[data-bom-ncown],[data-bom-nc-apply]');if(!t)return;e.stopPropagation();e.preventDefault();
+document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-bom-nctoggle],[data-bom-ncown],[data-bom-ncdel],[data-bom-nc-apply]');if(!t)return;e.stopPropagation();e.preventDefault();
+  if(t.hasAttribute('data-bom-ncdel')){var did=t.getAttribute('data-bom-ncdel');if(!confirm('Bu adı siləsən? Ödənilən jeton geri qaytarılmır.'))return;ECO.ncs=bomNcOwned().filter(function(x){return x!==did;});if(ECO.eq.n===did)ECO.eq.n='';saveEco();toast('Ad silindi',2000);render();return;}
   if(t.hasAttribute('data-bom-nctoggle')){C.bomNcOpen=!C.bomNcOpen;render();return;}
   if(t.hasAttribute('data-bom-ncown')){var oid=t.getAttribute('data-bom-ncown');if(bomNcOwned().indexOf(oid)<0)return;if(ECO.eq.n===oid)return;ECO.eq.n=oid;saveEco();toast('✓ Ad rəngi dəyişdirildi',2000,true);render();return;}
   var a=(C.bomNc1||'#ff4d4d').slice(1).toLowerCase(),c=(C.bomNc2||'#4d7cff').slice(1).toLowerCase();
