@@ -45,6 +45,9 @@ button{font:inherit;cursor:pointer}
     <button class="tile" data-sec="sMsg">💬 Mesaj göndər</button>
     <button class="tile" data-sec="sAdd">🪙 Jeton əlavə et</button>
     <button class="tile" data-sec="sDel">➖ Jeton sil</button>
+    <button class="tile" data-sec="sBan">🚫 Ban</button>
+    <button class="tile" data-sec="sBc">📢 Elan göndər</button>
+    <button class="tile" data-sec="sLog">📜 Jurnal</button>
   </div>
 
   <div id="sCheck" class="sec hidden">
@@ -83,6 +86,25 @@ button{font:inherit;cursor:pointer}
     <button class="btn red" id="doDel">Sil</button>
   </div>
 
+  <div id="sBan" class="sec hidden">
+    <h3>Ban / Banı götür</h3>
+    <input id="banReason" maxlength="200" placeholder="Səbəb (oyunçuya göstərilir)">
+    <div class="row"><button class="btn red" id="doBan">Ban et</button><button class="btn alt" id="doUnban">Banı götür</button></div>
+  </div>
+
+  <div id="sBc" class="sec hidden">
+    <h3>Hamıya elan</h3>
+    <input id="bcTitle" maxlength="60" placeholder="Başlıq">
+    <textarea id="bcBody" maxlength="500" placeholder="Elan mətni"></textarea>
+    <button class="btn" id="doBc">Hamıya göndər</button>
+  </div>
+
+  <div id="sLog" class="sec hidden">
+    <h3>Admin jurnalı</h3>
+    <button class="btn alt" id="doLog">Yenilə (son 30)</button>
+    <div id="logList" class="muted" style="margin-top:10px"></div>
+  </div>
+
   <button class="btn alt" id="logout" style="margin-top:18px">Çıxış</button>
 </section>
 </main>
@@ -105,7 +127,7 @@ function getId(){const v=$('pid').value.trim();if(!/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.t
 function log(type,target,detail){return db.collection('adminLog').add({type,target,detail,uid:admin.uid,ts:TS()}).catch(()=>{})}
 
 /* Düymələr: basanda açılır, təkrar basanda bağlanır */
-const SECS=['sCheck','sTick','sAdm','sMsg','sAdd','sDel'];
+const SECS=['sCheck','sTick','sAdm','sMsg','sAdd','sDel','sBan','sBc','sLog'];
 document.querySelectorAll('.tile').forEach(t=>t.addEventListener('click',()=>{
   const id=t.dataset.sec,wasOpen=!$(id).classList.contains('hidden');
   SECS.forEach(s=>$(s).classList.add('hidden'));
@@ -130,15 +152,12 @@ auth.onAuthStateChanged(async u=>{
 $('doCheck').onclick=async()=>{
   const id=getId();if(!id)return;
   try{
-    const [o,w,b]=await Promise.all([
-      db.collection('playerOwners').doc(id).get(),
-      db.collection('wallets').doc(id).get(),
-      db.collection('playerBadges').doc(id).get()
-    ]);
+    const g=(c)=>db.collection(c).doc(id).get().catch(()=>null);
+    const [o,w,b,p,bn]=await Promise.all([g('playerOwners'),g('wallets'),g('playerBadges'),g('publicProfiles'),g('bans')]);
     const box=$('profile');
-    if(!o.exists){box.textContent='Bu ID hələ oyunçu hesabına bağlanmayıb.';return}
-    const bd=b.exists?b.data():{};
-    box.textContent='ID: '+id+' · Hesab: aktiv · Bulud balansı: '+(w.exists?(w.data().balance||0):'hazırlanır')+' · Mavi tik: '+(bd.verified?'var':'yox')+' · Admin nişanı: '+(bd.admin?'var':'yox');
+    if(!o||!o.exists){box.textContent='Bu ID hələ oyunçu hesabına bağlanmayıb.';return}
+    const bd=(b&&b.exists)?b.data():{},pd=(p&&p.exists)?p.data():{},banned=bn&&bn.exists&&bn.data().banned===true;
+    box.textContent='ID: '+id+' · Ad: '+(pd.n||'?')+' · Səviyyə: '+(pd.lv||'?')+' · Mavi tik: '+(bd.verified?'var':'yox')+' · Admin nişanı: '+(bd.admin?'var':'yox')+' · Ban: '+(banned?'BƏLİ':'yox');
   }catch(e){toast(e.message)}
 };
 
@@ -182,5 +201,16 @@ async function grant(sign,nId,noteId){
 }
 $('doAdd').onclick=()=>grant(1,'addN','addNote');
 $('doDel').onclick=()=>grant(-1,'delN','delNote');
+
+/* Ban */
+async function setBan(v){const id=getId();if(!id)return;try{await db.collection('bans').doc(id).set({banned:v,reason:$('banReason').value.trim().slice(0,200),by:admin.uid,ts:TS()});await log('ban',id,v?'ban':'unban');toast(v?'Oyunçu bloklandı':'Blok götürüldü')}catch(e){toast('Alınmadı: '+e.message)}}
+$('doBan').onclick=()=>setBan(true);
+$('doUnban').onclick=()=>setBan(false);
+
+/* Elan */
+$('doBc').onclick=async()=>{const t=$('bcTitle').value.trim(),b=$('bcBody').value.trim();if(!t||!b){toast('Başlıq və mətn yaz');return}try{await db.collection('broadcasts').add({title:t.slice(0,60),body:b.slice(0,500),by:ADMIN_NAME,ts:TS()});await log('elan','hamı',t.slice(0,60));$('bcTitle').value='';$('bcBody').value='';toast('Elan göndərildi')}catch(e){toast('Göndərilmədi: '+e.message)}};
+
+/* Jurnal */
+$('doLog').onclick=async()=>{try{const sn=await db.collection('adminLog').orderBy('ts','desc').limit(30).get();const box=$('logList');box.textContent='';if(sn.empty){box.textContent='Jurnal boşdur.';return}sn.docs.forEach(d=>{const x=d.data(),t=x.ts&&x.ts.toDate?x.ts.toDate().toLocaleString('az'):'';const row=document.createElement('div');row.style.cssText='padding:7px 0;border-top:1px solid var(--bd)';row.textContent=t+' · '+(x.type||'')+' · '+(x.target||'')+' · '+(x.detail||'');box.appendChild(row)})}catch(e){toast(e.message)}};
 </script>
 </body></html>
