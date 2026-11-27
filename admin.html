@@ -53,6 +53,7 @@ button{font:inherit;cursor:pointer}
   <div id="sCheck" class="sec hidden">
     <h3>Oyunçunu yoxla</h3>
     <button class="btn" id="doCheck">Yoxla</button>
+    <button class="btn alt" id="doReset">🔓 ID bağlantısını sıfırla</button>
     <div id="profile"></div>
   </div>
 
@@ -212,5 +213,8 @@ $('doBc').onclick=async()=>{const t=$('bcTitle').value.trim(),b=$('bcBody').valu
 
 /* Jurnal */
 $('doLog').onclick=async()=>{try{const sn=await db.collection('adminLog').orderBy('ts','desc').limit(30).get();const box=$('logList');box.textContent='';if(sn.empty){box.textContent='Jurnal boşdur.';return}sn.docs.forEach(d=>{const x=d.data(),t=x.ts&&x.ts.toDate?x.ts.toDate().toLocaleString('az'):'';const row=document.createElement('div');row.style.cssText='padding:7px 0;border-top:1px solid var(--bd)';row.textContent=t+' · '+(x.type||'')+' · '+(x.target||'')+' · '+(x.detail||'');box.appendChild(row)})}catch(e){toast(e.message)}};
+
+/* ID bağlantısını sıfırla (oyunçu başqa hesaba bağlı qalıbsa) */
+$('doReset').onclick=async()=>{const id=getId();if(!id)return;if(!confirm(id+' ID-sinin hesab bağlantısı silinsin? Oyunçu oyunu yenidən açanda ID bu cihazdakı hesaba bağlanacaq.'))return;try{await db.collection('playerOwners').doc(id).delete();await log('reset',id,'owner link');toast('Bağlantı sıfırlandı')}catch(e){toast('Alınmadı: '+e.message)}};
 </script>
 </body></html>
