@@ -1912,7 +1912,7 @@ function frSendAudio(id,blob){if(!blob||!frFind(id))return;if(blob.size>1.5*1024
   var r=new FileReader();r.onload=function(){var d=String(r.result);if(d.indexOf('data:audio/')!==0){toast('Səs oxunmadı',3000);return;}var mid=frUid();MEDIA[mid]={k:'aud',d:d};mediaSave();var it=frQueue(id,'media',mid),ch=ECO.fr.chat[id]=ECO.fr.chat[id]||[];ch.push({m:1,t:'',ts:it.ts,i:it.i,d:0,media:{id:mid,k:'aud'}});if(ch.length>200)ch.shift();saveEco();render();frFlush(id,true);};r.onerror=function(){toast('Səs oxunmadı',3000);};r.readAsDataURL(blob);}
 function fprofView(){var f=frFind(C.fpid);if(!f){C.view='friends';return friendsView();}bomRecordView(f.id);var on=frOnline(f.id),lv=f.lv||1;
   return'<div class="erow"><h2>👤 Dost profili</h2></div><div><button class="btn ghost sm" type="button" data-fr="chat:'+f.id+'">← Söhbətə qayıt</button></div>'+
-  '<div class="eco profile-hero" style="align-items:center;text-align:center"><span class="av xl fr-'+fk(f.fr)+'">'+(f.ph?avHtml(f.av,f.ph):esc(f.av||'👤'))+'</span><div class="profile-name">'+bomBadgeParts(f.id).tick+esc(f.n)+'</div>'+bomBadgeParts(f.id).adm+''+(gdSym(f.gd)?'<div class="profile-level">'+gdSym(f.gd)+' '+(f.gd==='m'?'Kişi':'Qadın')+'</div>':'')+''+(f.bio?'<div class="profile-bio">“'+esc(f.bio)+'”</div>':'')+'<div class="profile-id">🆔 '+esc(f.id)+'</div><div class="profile-level">⭐ Səviyyə '+lv+' · '+titleOf(lv)+'</div><div class="profile-level">'+(on?'🟢 Onlayn':'⚪ Oflayn')+'</div>'+(Array.isArray(f.showcase)&&f.showcase.length?'<div class="achievement-grid">'+f.showcase.slice(0,3).map(function(a){return '<div class="achievement unlocked"><span>'+esc(a.e||'🏆')+'</span><b>'+esc(a.t||'Nailiyyət')+'</b></div>';}).join('')+'</div>':'')+'</div>'+
+  '<div class="eco profile-hero" style="align-items:center;text-align:center"><span class="av xl fr-'+fk(f.fr)+'">'+(f.ph?avHtml(f.av,f.ph):esc(f.av||'👤'))+'</span><div class="profile-name">'+bomBadgeParts(f.id).tick+esc(f.n)+'</div>'+bomBadgeParts(f.id).adm+bomLikeLine(f.id)+(frOnline(f.id)?'':bomSeenLine(f.id))+''+(gdSym(f.gd)?'<div class="profile-level">'+gdSym(f.gd)+' '+(f.gd==='m'?'Kişi':'Qadın')+'</div>':'')+''+(f.bio?'<div class="profile-bio">“'+esc(f.bio)+'”</div>':'')+'<div class="profile-id">🆔 '+esc(f.id)+'</div><div class="profile-level">⭐ Səviyyə '+lv+' · '+titleOf(lv)+'</div><div class="profile-level">'+(on?'🟢 Onlayn':'⚪ Oflayn')+'</div>'+(Array.isArray(f.showcase)&&f.showcase.length?'<div class="achievement-grid">'+f.showcase.slice(0,3).map(function(a){return '<div class="achievement unlocked"><span>'+esc(a.e||'🏆')+'</span><b>'+esc(a.t||'Nailiyyət')+'</b></div>';}).join('')+'</div>':'')+'</div>'+
   '<div class="fig" style="margin:10px 0"><button class="btn" type="button" data-fr="chat:'+f.id+'">💬 Söhbət</button><button class="btn ghost" type="button" data-fr="gpick:'+f.id+'">🎁 Hədiyyə</button><button class="btn ghost" type="button" data-fr="pinv:'+f.id+'">🎮 Oyun dəvəti</button></div><div class="fig" style="margin:12px 0 0"><button class="btn ghost" type="button" data-bom-report="'+f.id+'">⚑ Şikayət et</button><button class="btn danger" type="button" data-bom-block="'+f.id+'">🚫 Bloka at</button></div>'; }
 function svSub(g,k){if(C.mode==='duo'||!C.gid)return'';if(k===C.mi)return'<small class="svl">🎖️ '+svTxt(gk(C.gid))+'</small>';var o=g.p[k]&&g.p[k].sv;return o?'<small class="svl">🎖️ SV '+o+'</small>':'';}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-sec]');if(b){e.stopPropagation();bomConfirm('Bütün söhbət tarixçəsi və göndərilmiş media bu cihazdan silinsin?',function(){ECO.fr.chat={};ECO.fr.unread={};Object.keys(MEDIA).forEach(function(k){delete MEDIA[k];});mediaSave();saveEco();toast('Söhbət tarixçəsi silindi ✓',2500,true);render();});}},true);
@@ -2245,7 +2245,7 @@ function achievementsView(){
 function accView(){
   var lv=lvOf(ECO.xp),total=STATS.w+STATS.l+STATS.d;
   return bomEyeTop(topBar('👤 Profil',false,true))+
-  '<div class="eco profile-hero" style="background:linear-gradient(135deg,'+(profile.bg||'#241b46')+',#111827) !important"><span class="av xl fr-'+fk(ECO.eq.f)+'">'+avHtml(profile.avatar,profile.photo)+'</span><div class="profile-name">'+bomBadgeParts(ECO.id).tick+myName()+'</div>'+bomBadgeParts(ECO.id).adm+''+((profile.gsel==='male'||profile.gsel==='female')?'<div class="profile-level">'+gdSym(profile.gsel==='male'?'m':'f')+' '+(profile.gsel==='male'?'Kişi':'Qadın')+(profile.gh?' · başqalarından gizlidir':'')+'</div>':'')+(profile.bio?'<div class="profile-bio">“'+esc(profile.bio)+'”</div>':'')+(ECO.selectedTitle?'<div class="profile-level">👑 '+esc(ECO.selectedTitle)+'</div>':'')+'<div class="profile-id">🆔 '+esc(ECO.id)+' <button class="btn ghost sm" data-adm="cpid" type="button">Kopyala</button></div><div class="profile-level">⭐ Səviyyə '+lv+' · '+titleOf(lv)+'</div><button class="btn ghost sm" id="btn-open-profile" type="button">✏️ Profili dəyiş</button></div>'+
+  '<div class="eco profile-hero" style="background:linear-gradient(135deg,'+(profile.bg||'#241b46')+',#111827) !important"><span class="av xl fr-'+fk(ECO.eq.f)+'">'+avHtml(profile.avatar,profile.photo)+'</span><div class="profile-name">'+bomBadgeParts(ECO.id).tick+myName()+'</div>'+bomBadgeParts(ECO.id).adm+bomOwnLikes()+''+((profile.gsel==='male'||profile.gsel==='female')?'<div class="profile-level">'+gdSym(profile.gsel==='male'?'m':'f')+' '+(profile.gsel==='male'?'Kişi':'Qadın')+(profile.gh?' · başqalarından gizlidir':'')+'</div>':'')+(profile.bio?'<div class="profile-bio">“'+esc(profile.bio)+'”</div>':'')+(ECO.selectedTitle?'<div class="profile-level">👑 '+esc(ECO.selectedTitle)+'</div>':'')+'<div class="profile-id">🆔 '+esc(ECO.id)+' <button class="btn ghost sm" data-adm="cpid" type="button">Kopyala</button></div><div class="profile-level">⭐ Səviyyə '+lv+' · '+titleOf(lv)+'</div><button class="btn ghost sm" id="btn-open-profile" type="button">✏️ Profili dəyiş</button></div>'+
   friendsRow();
 }
 function connectionsView(){
@@ -2763,7 +2763,7 @@ function fData(hint,d,conn){
   if(d.type==='FREQ'){
     if(isF){frQueue(from,'acc');frFlush(from,true);}
     else if(frSentHas(from)){frMake(info);frQueue(from,'acc');frFlush(from,true);frNotify('🎉 '+info.n+' ilə dost oldunuz!');}
-    else if(!ECO.fr.inq.some(function(x){return x.id===from;})&&ECO.fr.inq.length<30){ECO.fr.inq.push({id:from,n:info.n,av:info.av,fr:info.fr,lv:info.lv,ts:Date.now()});saveEco();frNotify('👥 '+info.n+' sənə dostluq istəyi göndərdi');}
+    else if(!ECO.fr.inq.some(function(x){return x.id===from;})&&ECO.fr.inq.length<30){ECO.fr.inq.push({id:from,n:info.n,av:info.av,fr:info.fr,lv:info.lv,ts:Date.now()});saveEco();try{inboxAdd('👥 Dostluq istəyi',info.n+' sənə dostluq istəyi göndərdi','sys');}catch(e){}frNotify('👥 '+info.n+' sənə dostluq istəyi göndərdi');}
   }else if(d.type==='FACC'){
     if(frSentHas(from)){frMake(info);frNotify('🎉 '+info.n+' dostluq istəyini qəbul etdi!');}
   }else if(d.type==='FDEL'){
@@ -2871,7 +2871,7 @@ function frClick(k){
 }
 function frAv(p){return'<span class="av fr-'+fk(p.fr)+'">'+(p.ph?avHtml(p.av,p.ph):esc(p.av||'👤'))+'</span>';}
 function frTime(ts){var d=new Date(ts||Date.now());return('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
-function friendsRow(){var u=frUnread();return'<div class="eco"><button class="row" type="button" data-nav="friends" style="padding:2px 0"><span class="ri">👥</span><span class="rt"><b>Dostlar və söhbət</b><small>'+ECO.fr.list.length+' dost'+(u?' · 🔴 '+u+' yeni':'')+'</small></span><span class="chev">›</span></button></div>';}
+function friendsRow(){var u=frUnread();return'<div class="eco"><button class="row" type="button" data-nav="friends" style="padding:2px 0"><span class="ri">👥</span><span class="rt"><b>Dostlar və söhbət</b><small>'+ECO.fr.list.length+' dost'+(ECO.fr.inq.length?' · 📨 '+ECO.fr.inq.length+' istək':'')+(u?' · 🔴 '+u+' yeni':'')+'</small></span><span class="chev">›</span></button></div>';}
 function friendsView(){
   var F=ECO.fr;
   var h='<div class="erow"><h2>Dostlar</h2><div class="fr-head-actions"><button class="btn ghost sm fr-search-toggle" data-fr="search" type="button" aria-label="Dost axtar">'+(C.frsearch?'✕ Axtarışı bağla':'🔍 Axtar')+'</button><button class="btn sm" data-fr="addbox" type="button">'+(C.fradd?'✕':'➕ Əlavə et')+'</button></div></div>';
@@ -4115,7 +4115,7 @@ function render(){   if(WDW.active&&C.view!=='wordle')wdStopOnline();if(C.view==
     '<div class="field"><label for="prof-name">Ad / Ləqəb</label><input type="text" id="prof-name" value="'+esc(C.pn!=null?C.pn:P.name)+'" maxlength="14"></div>'+
     '<div class="field"><label for="prof-bio">Qısa məlumat <small style="color:var(--mut)">(könüllü, 60 simvol)</small></label><input type="text" id="prof-bio" maxlength="60" placeholder="Məs: Oyun həvəskarı 🎮 · Bakı" value="'+esc(C.pb!=null?C.pb:(P.bio||''))+'"></div>'+     '<div class="field"><label for="prof-gender">Cinsiyyət <small style="color:var(--mut)">(könüllü)</small></label><select id="prof-gender"><option value="none"'+((P.gsel||'none')==='none'?' selected':'')+'>Seçmirəm</option><option value="male"'+(P.gsel==='male'?' selected':'')+'>Kişi ♂️</option><option value="female"'+(P.gsel==='female'?' selected':'')+'>Qadın ♀️</option><option value="other"'+(P.gsel==='other'?' selected':'')+'>Digər 🤖</option></select></div>'+(P.gsel==='male'||P.gsel==='female'?'<div class="field"><label class="gx-chk"><input type="checkbox" id="prof-gh"'+(P.gh?' checked':'')+'> Cinsiyyət işarəsini başqalarından gizlət</label></div>':'')+
     '<div class="field"><label for="prof-country">Ölkə</label><div style="display:flex;gap:8px;align-items:center"><input type="text" id="prof-country" list="ctry-list" autocomplete="off" placeholder="Azərbaycan" value="'+esc(C.pc!=null?C.pc:ccName(P.cc))+'" style="flex:1"><span id="cc-prev" style="font-size:28px">'+(P.cc?flagOf(P.cc):'')+'</span></div><datalist id="ctry-list">'+CTRY.map(function(c){return '<option value="'+c[1]+'">';}).join('')+'</datalist></div>'+
-    '<div class="field"><label>Profil arxa fon rəngi</label><div class="bg-palette">'+['#241b46','#172554','#123b3a','#4a1942','#4b2b12','#202938','#3b1d1d','#273449'].map(function(c){return '<button type="button" class="bg-swatch" data-profile-bg="'+c+'" style="background:'+c+';outline:'+((C.pbg||P.bg)===c?'2px solid #f5c84c':'none')+'" aria-label="'+c+'"></button>';}).join('')+'</div></div>'+
+    '<div class="field"><label>Profil arxa fon rəngi</label><div class="bg-palette">'+['#241b46','#172554','#123b3a','#4a1942','#4b2b12','#202938','#3b1d1d','#273449'].map(function(c){return '<button type="button" class="bg-swatch" data-profile-bg="'+c+'" style="background:'+c+';outline:'+((C.pbg||P.bg)===c?'2px solid #f5c84c':'none')+'" aria-label="'+c+'"></button>';}).join('')+'</div><div style="margin-top:10px"><label style="display:flex;align-items:center;gap:10px">🎨 Özəl rəng <input type="color" data-profile-bgcolor value="'+(/^#[0-9a-fA-F]{6}$/.test(String(C.pbg||P.bg||''))?(C.pbg||P.bg):'#241b46')+'" style="width:56px;height:36px;border:0;background:none;padding:0"></label></div></div>'+
     '<div class="field"><label>Avatar</label><div class="avg">'+list.map(function(a){return '<div class="ao'+(!P.photo&&P.avatar===a?' sel':'')+'" data-av="'+a+'">'+a+'</div>';}).join('')+'</div></div>'+
     '<div style="display:flex;gap:8px"><button class="btn ghost" id="btn-close-profile" type="button">Bağla</button><button class="btn" id="btn-save-profile" type="button">Yadda Saxla</button></div></div></div>';
   }
@@ -4900,7 +4900,7 @@ document.addEventListener('click',function(e){var s=e.target.closest&&e.target.c
 var BPUB={h:'',busy:false};
 function bomPubProfile(){
   if(!fbDb||!fbUser||!playerOwnerReady||!ECO.id||BPUB.busy)return;
-  var b=frMe(),d={uid:fbUser.uid,n:String(b.n||'').slice(0,14),av:String(b.av||''),fr:String(b.fr||''),lv:b.lv||1,bio:String(b.bio||'').slice(0,200),gd:b.gd||'',ns:nk(ECO.eq.n)||'',nr:settings.noReq?1:0},h=JSON.stringify(d);
+  var b=frMe(),d={uid:fbUser.uid,n:String(b.n||'').slice(0,14),av:String(b.av||''),fr:String(b.fr||''),lv:b.lv||1,bio:String(b.bio||'').slice(0,200),gd:b.gd||'',ns:nk(ECO.eq.n)||'',nr:settings.noReq?1:0,ho:settings.hideOn?1:0},h=JSON.stringify(d);
   if(h===BPUB.h)return;BPUB.busy=true;d.ts=firebase.firestore.FieldValue.serverTimestamp();
   fbDb.collection('publicProfiles').doc(String(ECO.id)).set(d).then(function(){BPUB.h=h;}).catch(function(e){console.warn('Public profile:',e&&e.code||e);}).then(function(){BPUB.busy=false;});
 }
@@ -4913,7 +4913,7 @@ function bomSearchPlayer(id){
   toast('🔍 Axtarılır...',1500);
   fbDb.collection('publicProfiles').doc(id).get().then(function(doc){
     if(!doc.exists){C.sprof={id:id,miss:1};}
-    else{var d=doc.data()||{};C.sprof={id:id,n:String(d.n||'Oyunçu').slice(0,14),av:ALLAV.indexOf(d.av)>-1?d.av:'👤',fr:fk(d.fr),lv:Math.min(100,Math.max(1,Math.floor(+d.lv)||1)),bio:cleanBio(d.bio),gd:(d.gd==='m'||d.gd==='f')?d.gd:'',ns:nk(d.ns),nr:d.nr===1};}
+    else{var d=doc.data()||{};C.sprof={id:id,n:String(d.n||'Oyunçu').slice(0,14),av:ALLAV.indexOf(d.av)>-1?d.av:'👤',fr:fk(d.fr),lv:Math.min(100,Math.max(1,Math.floor(+d.lv)||1)),bio:cleanBio(d.bio),gd:(d.gd==='m'||d.gd==='f')?d.gd:'',ns:nk(d.ns),nr:d.nr===1,ho:d.ho===1,ms:(d.ts&&d.ts.toMillis?d.ts.toMillis():0)};}
     C.frid='';C.fradd=false;C.view='sprof';render();
   }).catch(function(e){toast('Axtarış alınmadı: '+(e&&(e.code||e.message)||''),4000);});
 }
@@ -4923,7 +4923,7 @@ function sprofView(){
   if(d.miss)return top+'<div class="eco" style="text-align:center;align-items:center"><div style="font-size:40px">🔎</div><b>Oyunçu tapılmadı</b><small>ID: '+esc(d.id)+'<br>ID-ni yoxla. Oyunçu oyunun yeni versiyasını hələ açmamış ola bilər.</small></div><button class="btn ghost" type="button" data-bom-sp="force">➕ Yenə də dostluq istəyi göndər</button>';
   bomRecordView(d.id);var sent=frSentHas(d.id),isF=!!frFind(d.id);
   var btn=isF?'<button class="btn" type="button" data-fr="prof:'+d.id+'">👤 Profilə bax</button>':sent?'<button class="btn ghost" type="button" disabled>⏳ İstək göndərilib</button>':d.nr?'<button class="btn ghost" type="button" disabled>Bu oyunçu istək qəbul etmir</button>':'<button class="btn" type="button" data-bom-sp="req">➕ Dostluq at</button>';
-  return top+'<div class="eco profile-hero" style="align-items:center;text-align:center"><span class="av xl fr-'+fk(d.fr)+'">'+esc(d.av||'👤')+'</span><div class="profile-name">'+bomBadgeParts(d.id).tick+'<b class="ns-'+nk(d.ns)+'">'+esc(d.n)+'</b></div>'+bomBadgeParts(d.id).adm+''+(gdSym(d.gd)?'<div class="profile-level">'+gdSym(d.gd)+' '+(d.gd==='m'?'Kişi':'Qadın')+'</div>':'')+(d.bio?'<div class="profile-bio">“'+esc(d.bio)+'”</div>':'')+'<div class="profile-id">🆔 '+esc(d.id)+'</div><div class="profile-level">⭐ Səviyyə '+d.lv+' · '+titleOf(d.lv)+'</div></div><div class="fig" style="margin:10px 0">'+btn+'</div>';
+  return top+'<div class="eco profile-hero" style="align-items:center;text-align:center"><span class="av xl fr-'+fk(d.fr)+'">'+esc(d.av||'👤')+'</span><div class="profile-name">'+bomBadgeParts(d.id).tick+'<b class="ns-'+nk(d.ns)+'">'+esc(d.n)+'</b></div>'+bomBadgeParts(d.id).adm+bomLikeLine(d.id)+bomSeenLineD(d)+''+(gdSym(d.gd)?'<div class="profile-level">'+gdSym(d.gd)+' '+(d.gd==='m'?'Kişi':'Qadın')+'</div>':'')+(d.bio?'<div class="profile-bio">“'+esc(d.bio)+'”</div>':'')+'<div class="profile-id">🆔 '+esc(d.id)+'</div><div class="profile-level">⭐ Səviyyə '+d.lv+' · '+titleOf(d.lv)+'</div></div><div class="fig" style="margin:10px 0">'+btn+'</div>';
 }
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-bom-sp]');if(!b)return;e.stopPropagation();e.preventDefault();var a=b.getAttribute('data-bom-sp'),d=C.sprof;
   if(a==='back'){C.view='friends';C.fradd=true;render();return;}
@@ -4952,7 +4952,7 @@ function bomEyeTop(h){var n=BVW.list.length,b='<button type="button" class="inbx
 function pviewsView(){
   var L=BVW.list,h='<div class="erow"><h2>👁️ Profilə baxanlar</h2></div><div class="row"><button class="btn ghost sm" type="button" data-bom-pvback>← Geri</button><button class="btn ghost sm" type="button" data-bom-pvhide>'+(ECO.hv?'👁️ Baxışlarım görünsün':'🙈 Baxışlarım gizli olsun')+'</button></div><div class="eco" style="text-align:center;align-items:center"><b style="font-size:30px">'+(L.length>=100?'100+':L.length)+'</b><small>nəfər profilinə baxıb</small></div>';
   if(!L.length)return h+'<div class="sub" style="text-align:center;padding:30px 10px">Hələ heç kim baxmayıb.</div>';
-  return h+'<div class="card">'+L.map(function(v){return'<div class="frr" style="cursor:default">'+frAv(v)+'<span class="rt"><b>'+bomBadgeParts(v.id).tick+esc(v.n)+'</b>'+((BADGE_CACHE[v.id]||{}).admin?'<small><span class="player-admin-tag">ADMIN</span></small>':'')+'<small>'+(v.ts?frTime(v.ts):'')+'</small></span></div>';}).join('')+'</div>';
+  return h+'<div class="card">'+L.map(function(v){return'<div class="frr" style="cursor:default">'+frAv(v)+'<span class="rt"><b>'+bomBadgeParts(v.id).tick+esc(v.n)+'</b>'+((BADGE_CACHE[v.id]||{}).admin?'<small><span class="player-admin-tag">ADMIN</span></small>':'')+'<small>'+bomAgo(v.ts)+'</small></span></div>';}).join('')+'</div>';
 }
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-bom-pv],[data-bom-pvback],[data-bom-pvhide]');if(!b)return;e.stopPropagation();e.preventDefault();if(b.hasAttribute('data-bom-pvhide')){ECO.hv=!ECO.hv;saveEco();toast(ECO.hv?'🙈 Baxışların artıq gizlidir':'👁️ Baxışların görünəcək',2200);render();return;}C.view=b.hasAttribute('data-bom-pv')?'pviews':'account';render();},true);
 
@@ -4993,6 +4993,39 @@ function bomWatchBan(){
   },function(e){BBN.unsub=null;BBN.err++;console.warn('Ban:',e&&e.code||e);});
 }
 setInterval(bomWatchBan,5000);
+
+/* ===== Bəyənmə, son aktiv, vaxt ===== */
+function bomAgo(ms){if(!ms)return'';var d=Math.max(0,Date.now()-ms),m=Math.floor(d/60000);if(m<1)return'indicə';if(m<60)return m+' dəq əvvəl';var h=Math.floor(m/60);if(h<24)return h+' saat əvvəl';return Math.floor(h/24)+' gün əvvəl';}
+var BLK={c:{}};
+function bomLoadLikes(tid){
+  if(!fbDb||!fbUser||!playerOwnerReady||!ID_RE.test(String(tid)))return;
+  var x=BLK.c[tid]=BLK.c[tid]||{n:0,me:false,t:0};if(x.busy)return;x.busy=true;
+  var col=fbDb.collection('profileLikes').doc(tid).collection('likers');
+  Promise.all([col.limit(500).get(),col.doc(String(ECO.id)).get()]).then(function(r){x.n=r[0].size;x.me=r[1].exists;x.t=Date.now();})
+    .catch(function(e){x.t=Date.now();console.warn('Likes:',e&&e.code||e);})
+    .then(function(){x.busy=false;try{if(C.view==='fprof'||C.view==='sprof'||C.view==='account')render();}catch(e){}});
+}
+function bomLikeState(tid){var x=BLK.c[tid];if(!x||(!x.busy&&Date.now()-x.t>60000))bomLoadLikes(tid);return BLK.c[tid]||{n:0,me:false,t:0};}
+function bomLikeLine(id){id=String(id||'');if(!ID_RE.test(id)||id===ECO.id)return'';var x=bomLikeState(id);return'<div class="profile-level"><button type="button" class="btn ghost sm" data-bom-like="'+id+'">'+(x.me?'💖':'🤍')+' '+x.n+'</button></div>';}
+function bomOwnLikes(){var id=String(ECO.id||'');if(!ID_RE.test(id))return'';var x=bomLikeState(id);return x.n?'<div class="profile-level">❤️ '+x.n+' bəyənmə</div>':'';}
+function bomToggleLike(tid){
+  if(!fbDb||!fbUser||!playerOwnerReady||tid===ECO.id||!ID_RE.test(String(tid)))return;
+  var x=BLK.c[tid]||(BLK.c[tid]={n:0,me:false,t:Date.now()}),was=x.me,ref=fbDb.collection('profileLikes').doc(tid).collection('likers').doc(String(ECO.id));
+  x.me=!was;x.n=Math.max(0,x.n+(was?-1:1));render();
+  (was?ref.delete():ref.set({n:String(profile.name||'').slice(0,14),ts:firebase.firestore.FieldValue.serverTimestamp()})).catch(function(e){x.me=was;x.n=Math.max(0,x.n+(was?1:-1));render();toast('Alınmadı: '+(e&&e.code||''),3000);});
+}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-bom-like]');if(!b)return;e.stopPropagation();e.preventDefault();bomToggleLike(b.getAttribute('data-bom-like'));},true);
+var BSN={c:{}};
+function bomLoadSeen(id){
+  if(!fbDb||!fbUser||!playerOwnerReady||!ID_RE.test(String(id)))return;
+  var x=BSN.c[id]=BSN.c[id]||{ms:0,ho:false,t:0};if(x.busy)return;x.busy=true;
+  fbDb.collection('publicProfiles').doc(id).get().then(function(d){var v=d.exists?d.data():{};x.ms=v.ts&&v.ts.toMillis?v.ts.toMillis():0;x.ho=v.ho===1;x.t=Date.now();})
+    .catch(function(){x.t=Date.now();}).then(function(){x.busy=false;try{if(C.view==='fprof')render();}catch(e){}});
+}
+function bomSeenLine(id){id=String(id||'');var x=BSN.c[id];if(!x||(!x.busy&&Date.now()-x.t>60000))bomLoadSeen(id);x=BSN.c[id];return x&&x.ms&&!x.ho?'<div class="profile-level">🕒 Son aktiv: '+bomAgo(x.ms)+'</div>':'';}
+function bomSeenLineD(d){return d&&d.ms&&!d.ho?'<div class="profile-level">🕒 Son aktiv: '+bomAgo(d.ms)+'</div>':'';}
+document.addEventListener('change',function(e){var t=e.target;if(!t||!t.hasAttribute||!t.hasAttribute('data-profile-bgcolor'))return;var v=String(t.value||'');if(!/^#[0-9a-fA-F]{6}$/.test(v))return;C.pbg=v;if(PD)PD.bg=v;else{profile.bg=v;saveProfile();}render();},true);
+setInterval(function(){if(settings.hideOn||!fbDb||!fbUser||!playerOwnerReady||!BPUB.h||document.visibilityState!=='visible')return;fbDb.collection('publicProfiles').doc(String(ECO.id)).update({ts:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(){});},240000);
 function bomStatTiles(){var s=STATS,tot=(s.w||0)+(s.l||0)+(s.d||0),r=tot?Math.round((s.w||0)/tot*100):0;return'<div class="bom-ptiles"><div><b>'+(s.w||0)+'</b><small>🏆 Qələbə</small></div><div><b>'+(s.l||0)+'</b><small>💀 Məğlubiyyət</small></div><div><b>'+(s.d||0)+'</b><small>🤝 Bərabərlik</small></div><div><b>'+r+'%</b><small>📈 Qələbə %</small></div></div>';}
 document.addEventListener('input',function(e){var i=e.target;if(!i||!i.getAttribute||!i.getAttribute('data-bom-nc'))return;C['bomNc'+i.getAttribute('data-bom-nc')]=i.value;var p=document.getElementById('bom-ns-prev');if(p)p.style.backgroundImage='linear-gradient(90deg,'+(C.bomNc1||'#ff4d4d')+','+(C.bomNc2||'#4d7cff')+','+(C.bomNc1||'#ff4d4d')+')';},true);
 document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-bom-nctoggle],[data-bom-ncown],[data-bom-ncdel],[data-bom-nc-apply]');if(!t)return;e.stopPropagation();e.preventDefault();
