@@ -2436,7 +2436,7 @@ function badgeHTML(p){
       var next={admin:d.admin===true,verified:d.verified===true};
       var prev=BADGE_CACHE[id]||{};
       BADGE_CACHE[id]=next;
-      if(prev.admin!==next.admin||prev.verified!==next.verified){try{if(typeof C!=='undefined'&&C&&(C.view==='game'||C.view==='account'||C.view==='fprof'||C.view==='sprof'))render();}catch(e){}}
+      if(prev.admin!==next.admin||prev.verified!==next.verified){try{if(typeof C!=='undefined'&&C&&(C.view==='game'||C.view==='account'||C.view==='fprof'||C.view==='sprof'||C.view==='pviews'))render();}catch(e){}}
     },function(e){console.warn('Badge read:',e&&e.code||e);});
   }
   var b=BADGE_CACHE[id]||{};
@@ -4951,7 +4951,7 @@ function bomEyeTop(h){var n=BVW.list.length,b='<button type="button" class="inbx
 function pviewsView(){
   var L=BVW.list,h='<div class="erow"><h2>👁️ Profilə baxanlar</h2></div><div><button class="btn ghost sm" type="button" data-bom-pvback>← Geri</button></div><div class="eco" style="text-align:center;align-items:center"><b style="font-size:30px">'+(L.length>=100?'100+':L.length)+'</b><small>nəfər profilinə baxıb</small></div>';
   if(!L.length)return h+'<div class="sub" style="text-align:center;padding:30px 10px">Hələ heç kim baxmayıb.</div>';
-  return h+'<div class="card">'+L.map(function(v){return'<div class="frr" style="cursor:default">'+frAv(v)+'<span class="rt"><b>'+esc(v.n)+'</b><small>'+(v.ts?frTime(v.ts):'')+'</small></span></div>';}).join('')+'</div>';
+  return h+'<div class="card">'+L.map(function(v){return'<div class="frr" style="cursor:default">'+frAv(v)+'<span class="rt"><b>'+bomBadgeParts(v.id).tick+esc(v.n)+'</b>'+((BADGE_CACHE[v.id]||{}).admin?'<small><span class="player-admin-tag">ADMIN</span></small>':'')+'<small>'+(v.ts?frTime(v.ts):'')+'</small></span></div>';}).join('')+'</div>';
 }
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-bom-pv],[data-bom-pvback]');if(!b)return;e.stopPropagation();e.preventDefault();C.view=b.hasAttribute('data-bom-pv')?'pviews':'account';render();},true);
 function bomStatTiles(){var s=STATS,tot=(s.w||0)+(s.l||0)+(s.d||0),r=tot?Math.round((s.w||0)/tot*100):0;return'<div class="bom-ptiles"><div><b>'+(s.w||0)+'</b><small>🏆 Qələbə</small></div><div><b>'+(s.l||0)+'</b><small>💀 Məğlubiyyət</small></div><div><b>'+(s.d||0)+'</b><small>🤝 Bərabərlik</small></div><div><b>'+r+'%</b><small>📈 Qələbə %</small></div></div>';}
