@@ -2283,8 +2283,7 @@ function accClick(k){
   ECO.bk=Date.now();saveEco();
   if(k==='copy'){
     var c=encodeB(snapshot(true));
-    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(c).then(function(){toast('Yedək kodu kopyalandı ✓',2500,true);},function(){window.prompt('Kodu kopyala:',c);});}
-    else window.prompt('Kodu kopyala:',c);
+    copyText(c,'Yedək kodu kopyalandı ✓');
     return;
   }
   if(k==='file'){
@@ -2341,7 +2340,21 @@ function u8b64(u){var t='';for(var i=0;i<u.length;i++)t+=String.fromCharCode(u[i
 function b64u8(b){b=b.replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';var t=atob(b),u=new Uint8Array(t.length);for(var i=0;i<t.length;i++)u[i]=t.charCodeAt(i);return u;}
 function subtle(){return window.crypto&&crypto.subtle?crypto.subtle:null;}
 var ALG={name:'ECDSA',namedCurve:'P-256'},SIG={name:'ECDSA',hash:'SHA-256'};
-function copyText(t,msg){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast(msg||'Kopyalandı ✓',2000,true);},function(){window.prompt('Kopyala:',t);});}else window.prompt('Kopyala:',t);}
+function copyText(t,msg){
+  t=String(t);
+  function done(){toast(msg||'Kopyalandı ✓',2000,true);}
+  function fb(){
+    var ok=false;
+    try{
+      var ta=document.createElement('textarea');ta.value=t;ta.setAttribute('readonly','');
+      ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;-webkit-user-select:text;user-select:text';
+      document.body.appendChild(ta);ta.focus();ta.select();ta.setSelectionRange(0,t.length);
+      ok=document.execCommand('copy');document.body.removeChild(ta);
+    }catch(e){ok=false;}
+    if(ok)done();else window.prompt('Avtomatik kopyalanmadı. Kodu əl ilə kopyala:',t);
+  }
+  if(window.isSecureContext&&navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,fb);}else fb();
+}
 function noCrypto(){toast('Bu mühitdə şifrələmə dəstəklənmir (https və ya yerli server lazımdır).',4500);}
 function grantVerify(code){
   var S=subtle();if(!S)return Promise.reject('NC');
@@ -2500,7 +2513,7 @@ function ensurePlayerOwner(user){
       tx.set(owner,{uid:uid,createdAt:firebase.firestore.FieldValue.serverTimestamp()});return true;
     });
   }).then(function(){playerOwnerReady=true;watchPlayerWallet();return true;}).catch(function(e){
-    playerOwnerReady=false;console.warn('Player ID ownership:',e);toast(e.message||'Oyunçu ID-si buluda bağlanmadı.',5000);return false;
+    playerOwnerReady=false;console.warn('Player ID ownership:',e);toast((e&&e.code==='permission-denied')?'Bu ID hesaba bağlana bilmədi (icazə yoxdur). ID başqa hesaba bağlı ola bilər, dəstəyə müraciət et.':(e&&e.message||'Oyunçu ID-si buluda bağlanmadı.'),6000);return false;
   });
 }
 function watchPlayerWallet(){
@@ -4185,14 +4198,19 @@ var IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='Mac
 function shareUrl(){return location.href.split('#')[0].split('?')[0]+'?kod='+C.code;}
 function shareText(){return C.code;}
 function copyText(t,msg){
-  function done(){toast(msg,2000,true);}
+  t=String(t);
+  function done(){toast(msg||'Kopyalandı ✓',2000,true);}
   function fb(){
-    try{var ta=document.createElement('textarea');ta.value=t;ta.readOnly=true;ta.style.cssText='position:fixed;top:0;left:0;opacity:0;-webkit-user-select:text;user-select:text';
-      document.body.appendChild(ta);ta.focus();ta.select();ta.setSelectionRange(0,999);var ok=document.execCommand('copy');document.body.removeChild(ta);
-      if(ok)done();else toast('Kopyalamaq alınmadı: '+t,4000);}
-    catch(e){toast('Kopyalamaq alınmadı: '+t,4000);}
+    var ok=false;
+    try{
+      var ta=document.createElement('textarea');ta.value=t;ta.setAttribute('readonly','');
+      ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;-webkit-user-select:text;user-select:text';
+      document.body.appendChild(ta);ta.focus();ta.select();ta.setSelectionRange(0,t.length);
+      ok=document.execCommand('copy');document.body.removeChild(ta);
+    }catch(e){ok=false;}
+    if(ok)done();else window.prompt('Avtomatik kopyalanmadı. Kodu əl ilə kopyala:',t);
   }
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,fb);}else fb();
+  if(window.isSecureContext&&navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,fb);}else fb();
 }
 function share(){
   if(navigator.share){
@@ -5025,22 +5043,31 @@ function bomAgo(ms){if(!ms)return'';var d=Math.max(0,Date.now()-ms),m=Math.floor
 var BLK={c:{}};
 function bomLoadLikes(tid){
   if(!fbDb||!fbUser||!playerOwnerReady||!ID_RE.test(String(tid)))return;
-  var x=BLK.c[tid]=BLK.c[tid]||{n:0,me:false,t:0};if(x.busy)return;x.busy=true;
+  var x=BLK.c[tid]=BLK.c[tid]||{n:0,d:0,me:0,t:0};if(x.busy)return;x.busy=true;
   var col=fbDb.collection('profileLikes').doc(tid).collection('likers');
-  Promise.all([col.limit(500).get(),col.doc(String(ECO.id)).get()]).then(function(r){x.n=r[0].size;x.me=r[1].exists;x.t=Date.now();})
+  Promise.all([col.limit(500).get(),col.doc(String(ECO.id)).get()]).then(function(r){
+    var n=0,d=0;r[0].forEach(function(doc){if((doc.data()||{}).v===-1)d++;else n++;});
+    x.n=n;x.d=d;x.me=r[1].exists?(((r[1].data()||{}).v===-1)?-1:1):0;x.t=Date.now();})
     .catch(function(e){x.t=Date.now();console.warn('Likes:',e&&e.code||e);})
     .then(function(){x.busy=false;try{if(C.view==='fprof'||C.view==='sprof'||C.view==='account')render();}catch(e){}});
 }
-function bomLikeState(tid){var x=BLK.c[tid];if(!x||(!x.busy&&Date.now()-x.t>60000))bomLoadLikes(tid);return BLK.c[tid]||{n:0,me:false,t:0};}
-function bomLikeLine(id){id=String(id||'');if(!ID_RE.test(id)||id===ECO.id)return'';var x=bomLikeState(id);return'<div class="profile-level"><button type="button" class="btn ghost sm" data-bom-like="'+id+'">'+(x.me?'💖':'🤍')+' '+x.n+'</button></div>';}
-function bomOwnLikes(){var id=String(ECO.id||'');if(!ID_RE.test(id))return'';var x=bomLikeState(id);return x.n?'<div class="profile-level">❤️ '+x.n+' bəyənmə</div>':'';}
-function bomToggleLike(tid){
-  if(!fbDb||!fbUser||!playerOwnerReady||tid===ECO.id||!ID_RE.test(String(tid)))return;
-  var x=BLK.c[tid]||(BLK.c[tid]={n:0,me:false,t:Date.now()}),was=x.me,ref=fbDb.collection('profileLikes').doc(tid).collection('likers').doc(String(ECO.id));
-  x.me=!was;x.n=Math.max(0,x.n+(was?-1:1));render();
-  (was?ref.delete():ref.set({n:String(profile.name||'').slice(0,14),ts:firebase.firestore.FieldValue.serverTimestamp()})).catch(function(e){x.me=was;x.n=Math.max(0,x.n+(was?1:-1));render();toast('Alınmadı: '+(e&&e.code||''),3000);});
+function bomLikeState(tid){var x=BLK.c[tid];if(!x||(!x.busy&&Date.now()-x.t>60000))bomLoadLikes(tid);return BLK.c[tid]||{n:0,d:0,me:0,t:0};}
+function bomPop(x){return x.n-x.d;}
+function bomLikeLine(id){id=String(id||'');if(!ID_RE.test(id)||id===ECO.id)return'';var x=bomLikeState(id);
+  return'<div class="profile-level" style="display:flex;gap:8px;justify-content:center"><button type="button" class="btn sm'+(x.me===1?'':' ghost')+'" data-bom-react="'+id+':1">❤️ '+x.n+'</button><button type="button" class="btn sm'+(x.me===-1?'':' ghost')+'" data-bom-react="'+id+':-1">💔 '+x.d+'</button></div><div class="profile-level">⭐ Populyarlıq: '+bomPop(x)+'</div>';}
+function bomOwnLikes(){var id=String(ECO.id||'');if(!ID_RE.test(id))return'';var x=bomLikeState(id);return(x.n||x.d)?'<div class="profile-level">❤️ '+x.n+' · 💔 '+x.d+' · ⭐ Populyarlıq: '+bomPop(x)+'</div>':'';}
+function bomReact(tid,v){
+  if(tid===ECO.id||!ID_RE.test(String(tid)))return;
+  if(!fbDb||!fbUser){toast('Bəyənmək üçün internet və hesab girişi lazımdır',3000);return;}
+  if(!playerOwnerReady){toast('Hesabın ID-yə bağlanmayıb. Oyunu yenilə və ya dəstəyə yaz.',3500);return;}
+  var x=BLK.c[tid]||(BLK.c[tid]={n:0,d:0,me:0,t:Date.now()}),prev=x.me,next=(prev===v)?0:v,
+      ref=fbDb.collection('profileLikes').doc(tid).collection('likers').doc(String(ECO.id));
+  if(prev===1)x.n=Math.max(0,x.n-1);if(prev===-1)x.d=Math.max(0,x.d-1);if(next===1)x.n++;if(next===-1)x.d++;x.me=next;render();
+  (next===0?ref.delete():ref.set({n:String(profile.name||'').slice(0,14),ts:firebase.firestore.FieldValue.serverTimestamp(),v:next})).catch(function(e){
+    if(next===1)x.n=Math.max(0,x.n-1);if(next===-1)x.d=Math.max(0,x.d-1);if(prev===1)x.n++;if(prev===-1)x.d++;x.me=prev;render();
+    toast('Alınmadı: '+(e&&e.code||''),3000);});
 }
-document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-bom-like]');if(!b)return;e.stopPropagation();e.preventDefault();bomToggleLike(b.getAttribute('data-bom-like'));},true);
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-bom-react]');if(!b)return;e.stopPropagation();e.preventDefault();var p=String(b.getAttribute('data-bom-react')).split(':');bomReact(p[0],+p[1]===-1?-1:1);},true);
 var BSN={c:{}};
 function bomLoadSeen(id){
   if(!fbDb||!fbUser||!playerOwnerReady||!ID_RE.test(String(id)))return;
