@@ -2021,9 +2021,10 @@ function ecoResult(g){
 /* ===== Mesaj qutusu (admin mesajları, hədiyyələr, bağlantı bildirişləri) ===== */
 var LINK_GIFT=50;
 function inboxList(){if(!Array.isArray(ECO.inbox))ECO.inbox=[];return ECO.inbox;}
+function inboxHasSrc(k){return inboxList().some(function(m){return m&&m.src===k;});}
 function inboxUnread(){return inboxList().filter(function(m){return !m.read;}).length;}
-function inboxAdd(title,body,kind,by){
-  var L=inboxList();L.unshift({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),t:Date.now(),title:String(title||'Mesaj').slice(0,80),body:String(body||'').slice(0,600),kind:kind||'sys',by:by?String(by).slice(0,40):'',read:false});
+function inboxAdd(title,body,kind,by,src){
+  var L=inboxList();L.unshift({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),t:Date.now(),title:String(title||'Mesaj').slice(0,80),body:String(body||'').slice(0,600),kind:kind||'sys',by:by?String(by).slice(0,40):'',src:src?String(src).slice(0,40):'',read:false});
   if(L.length>60)L.length=60;saveEco();
 }
 function inboxBtn(){var n=inboxUnread();return '<button type="button" class="inbx" data-nav="inbox" aria-label="Mesajlar"><span class="inbx-i"></span>'+(n?'<i class="inbx-n">'+(n>9?'9+':n)+'</i>':'')+'</button>';}
@@ -2216,7 +2217,7 @@ function nn(v){v=Math.floor(+v);return v>=0&&v<=1e9?v:0;}
 function restoreB(o){
   var p=o.profile||{},e=o.eco||{},st=o.stats||{},se=o.settings||{};
   profile.name=String(p.name||profile.name).slice(0,14);profile.gender=AV[p.gender]?p.gender:'male';profile.avatar=ALLAV.indexOf(p.avatar)>-1?p.avatar:AV[profile.gender][0];profile.photo=okPhoto(p.photo)||profile.photo;profile.cc=/^[A-Z]{2}$/.test(p.cc||'')?p.cc:(profile.cc||'');
-  var cloudCoins=(typeof e.tokens==='number'&&isFinite(e.tokens))?e.tokens:((typeof o.coinBalance==='number'&&isFinite(o.coinBalance))?o.coinBalance:null);if(cloudCoins!==null)ECO.tokens=nn(cloudCoins);ECO.xp=nn(e.xp);ECO.uname=/^[a-z0-9_]{3,14}$/.test(e.uname||'')?e.uname:'';ECO.given=nn(e.given);if(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(e.id||''))ECO.id=e.id;ECO.used=Array.isArray(e.used)?e.used.filter(function(x){return typeof x==='string'&&x.length<=20;}).slice(-300):[];ECO.inv={};ECO.recv={};
+  var cloudCoins=(typeof e.tokens==='number'&&isFinite(e.tokens))?e.tokens:((typeof o.coinBalance==='number'&&isFinite(o.coinBalance))?o.coinBalance:null);if(cloudCoins!==null)ECO.tokens=nn(cloudCoins);ECO.xp=nn(e.xp);ECO.uname=/^[a-z0-9_]{3,14}$/.test(e.uname||'')?e.uname:'';ECO.given=nn(e.given);if(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(e.id||''))ECO.id=e.id;ECO.used=Array.isArray(e.used)?e.used.filter(function(x){return typeof x==='string'&&x.length<=40;}).slice(-300):[];ECO.inv={};ECO.recv={};
   GIFTS.forEach(function(g){ECO.inv[g.id]=Math.min(9999,nn((e.inv||{})[g.id]));ECO.recv[g.id]=Math.min(9999,nn((e.recv||{})[g.id]));});
   ECO.phone=/^\+?[0-9 ()-]{7,18}$/.test(e.phone||'')?String(e.phone):ECO.phone||'';ECO.fb=e.fb?String(e.fb).slice(0,80):ECO.fb||'';
   ECO.email=/^\S+@\S+\.\S+$/.test(e.email||'')?String(e.email).slice(0,60):ECO.email||'';
@@ -2399,14 +2400,14 @@ function grantWatch(){
     if(!INW)INW=fbDb.collection('inbox').doc(ECO.id).collection('items').where('read','==',false).onSnapshot(function(sn){
       sn.forEach(function(d){
         var x=d.data()||{};
-        if(!admSeen('i:'+d.id)){inboxAdd(x.title||'Mesaj',x.body||'',x.kind==='dm'?'dm':'mail',x.by);toast('📬 '+(x.title||'Mesaj')+': '+(x.body||''),9000,true);saveEco();}
+        if(!admSeen('i:'+d.id)&&!inboxHasSrc('i:'+d.id)){inboxAdd(x.title||'Mesaj',x.body||'',x.kind==='dm'?'dm':'mail',x.by,'i:'+d.id);toast('📬 '+(x.title||'Mesaj')+': '+(x.body||''),9000,true);saveEco();}
         d.ref.update({read:true,readAt:FV.serverTimestamp()}).catch(function(){});
       });
     },function(){INW=null;});
     if(!BCW)BCW=fbDb.collection('broadcasts').orderBy('ts','desc').limit(3).onSnapshot(function(sn){
       sn.forEach(function(d){
         var x=d.data()||{};
-        if(!admSeen('b:'+d.id)){inboxAdd(x.title||'Elan',x.body||'','bc');toast('📣 '+(x.title||'Elan')+': '+(x.body||''),9000,true);saveEco();
+        if(!admSeen('b:'+d.id)&&!inboxHasSrc('b:'+d.id)){inboxAdd(x.title||'Elan',x.body||'','bc','','b:'+d.id);toast('📣 '+(x.title||'Elan')+': '+(x.body||''),9000,true);saveEco();
           d.ref.collection('reads').doc(ECO.id).set({ts:FV.serverTimestamp()}).catch(function(){});}
       });
     },function(){BCW=null;});
@@ -5079,6 +5080,10 @@ function bomSeenLine(id){id=String(id||'');var x=BSN.c[id];if(!x||(!x.busy&&Date
 function bomSeenLineD(d){return d&&d.ms&&!d.ho?'<div class="profile-level">🕒 Son aktiv: '+bomAgo(d.ms)+'</div>':'';}
 document.addEventListener('change',function(e){var t=e.target;if(!t||!t.hasAttribute||!t.hasAttribute('data-profile-bgcolor'))return;var v=String(t.value||'');if(!/^#[0-9a-fA-F]{6}$/.test(v))return;C.pbg=v;if(PD)PD.bg=v;else{profile.bg=v;saveProfile();}render();},true);
 setInterval(function(){if(settings.hideOn||!fbDb||!fbUser||!playerOwnerReady||!BPUB.h||document.visibilityState!=='visible')return;fbDb.collection('publicProfiles').doc(String(ECO.id)).update({ts:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(){});},240000);
+
+/* Təkrarlanan elanları təmizlə (eyni başlıq və mətn, ən yenisi qalır) */
+function bomDedupInbox(){var L=inboxList(),seen={},out=[];L.forEach(function(m){if(m&&m.kind==='bc'){var k=(m.title||'')+'\u0001'+(m.body||'');if(seen[k])return;seen[k]=1;}out.push(m);});if(out.length!==L.length){ECO.inbox=out;saveEco();try{render();}catch(e){}}}
+setTimeout(bomDedupInbox,3000);setInterval(bomDedupInbox,30000);
 function bomStatTiles(){var s=STATS,tot=(s.w||0)+(s.l||0)+(s.d||0),r=tot?Math.round((s.w||0)/tot*100):0;return'<div class="bom-ptiles"><div><b>'+(s.w||0)+'</b><small>🏆 Qələbə</small></div><div><b>'+(s.l||0)+'</b><small>💀 Məğlubiyyət</small></div><div><b>'+(s.d||0)+'</b><small>🤝 Bərabərlik</small></div><div><b>'+r+'%</b><small>📈 Qələbə %</small></div></div>';}
 document.addEventListener('input',function(e){var i=e.target;if(!i||!i.getAttribute||!i.getAttribute('data-bom-nc'))return;C['bomNc'+i.getAttribute('data-bom-nc')]=i.value;var p=document.getElementById('bom-ns-prev');if(p)p.style.backgroundImage='linear-gradient(90deg,'+(C.bomNc1||'#ff4d4d')+','+(C.bomNc2||'#4d7cff')+','+(C.bomNc1||'#ff4d4d')+')';},true);
 document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-bom-nctoggle],[data-bom-nc-apply],[data-bom-nsel],[data-bom-sellmode]');if(!t)return;e.stopPropagation();e.preventDefault();
