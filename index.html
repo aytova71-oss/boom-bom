@@ -2545,7 +2545,9 @@ function fbHandleUser(user){
   }else if(!playerOwnerReady){ensurePlayerOwner(user);}
   if(C&&C.view==='account')render();
 }
+var BOM_WEB=/^https?:$/.test(location.protocol);
 function fbInit(){
+  if(!BOM_WEB)return;
   if(!window.firebase||!firebase.initializeApp){toast('Firebase SDK yüklənmədi. İnternet bağlantısını yoxla.',4000);return;}
   try{
     fbApp=firebase.apps.length?firebase.app():firebase.initializeApp(FIREBASE_CONFIG);
@@ -2566,6 +2568,7 @@ function fbInit(){
   }catch(e){console.error(e);toast('Firebase başladılmadı: '+(e.message||e),4500);}
 }
 function authAct(k){
+  if(!BOM_WEB){toast('Google/Facebook girişi yalnız saytda (gizlimina.web.app) və ya APK versiyasında işləyir.',4500);return;}
   if(!fbReady||!fbAuth){toast('Firebase hələ başladılmayıb. Səhifəni yenilə.',3500);return;}
   if(k==='facebook'||k==='google'){
     var providerId=k==='google'?'google.com':'facebook.com';
@@ -4954,7 +4957,7 @@ function bomSearchPlayer(id){
   if(!ID_RE.test(id))return;
   if(id===ECO.id){toast('Bu sənin öz ID-ndir',2500);return;}
   if(frFind(id)){C.fradd=false;C.fpid=id;C.view='fprof';render();return;}
-  if(!fbDb||!fbUser){toast('Axtarış üçün internet və hesab girişi lazımdır',3500);return;}
+  if(!fbDb||!fbUser){toast(BOM_WEB?'Axtarış üçün internet və hesab girişi lazımdır':'Axtarış yalnız saytda (gizlimina.web.app) və ya APK versiyasında işləyir',3500);return;}
   toast('🔍 Axtarılır...',1500);
   fbDb.collection('publicProfiles').doc(id).get().then(function(doc){
     if(!doc.exists){C.sprof={id:id,miss:1};}
@@ -5059,7 +5062,7 @@ function bomLikeLine(id){id=String(id||'');if(!ID_RE.test(id)||id===ECO.id)retur
 function bomOwnLikes(){var id=String(ECO.id||'');if(!ID_RE.test(id))return'';var x=bomLikeState(id);return(x.n||x.d)?'<div class="profile-level">❤️ '+x.n+' · 💔 '+x.d+' · ⭐ Populyarlıq: '+bomPop(x)+'</div>':'';}
 function bomReact(tid,v){
   if(tid===ECO.id||!ID_RE.test(String(tid)))return;
-  if(!fbDb||!fbUser){toast('Bəyənmək üçün internet və hesab girişi lazımdır',3000);return;}
+  if(!fbDb||!fbUser){toast(BOM_WEB?'Bəyənmək üçün internet və hesab girişi lazımdır':'Bəyənmə yalnız saytda (gizlimina.web.app) və ya APK versiyasında işləyir',3500);return;}
   if(!playerOwnerReady){toast('Hesabın ID-yə bağlanmayıb. Oyunu yenilə və ya dəstəyə yaz.',3500);return;}
   var x=BLK.c[tid]||(BLK.c[tid]={n:0,d:0,me:0,t:Date.now()}),prev=x.me,next=(prev===v)?0:v,
       ref=fbDb.collection('profileLikes').doc(tid).collection('likers').doc(String(ECO.id));
@@ -5084,6 +5087,9 @@ setInterval(function(){if(settings.hideOn||!fbDb||!fbUser||!playerOwnerReady||!B
 /* Təkrarlanan elanları təmizlə (eyni başlıq və mətn, ən yenisi qalır) */
 function bomDedupInbox(){var L=inboxList(),seen={},out=[];L.forEach(function(m){if(m&&m.kind==='bc'){var k=(m.title||'')+'\u0001'+(m.body||'');if(seen[k])return;seen[k]=1;}out.push(m);});if(out.length!==L.length){ECO.inbox=out;saveEco();try{render();}catch(e){}}}
 setTimeout(bomDedupInbox,3000);setInterval(bomDedupInbox,30000);
+
+/* Fayl rejimi xəbərdarlığı */
+if(!BOM_WEB)setTimeout(function(){try{toast('📴 Fayl rejimindəsən. Giriş, axtarış, bəyənmə kimi bulud funksiyaları yalnız saytda (gizlimina.web.app) və ya APK-da işləyir.',6500);}catch(e){}},3500);
 function bomStatTiles(){var s=STATS,tot=(s.w||0)+(s.l||0)+(s.d||0),r=tot?Math.round((s.w||0)/tot*100):0;return'<div class="bom-ptiles"><div><b>'+(s.w||0)+'</b><small>🏆 Qələbə</small></div><div><b>'+(s.l||0)+'</b><small>💀 Məğlubiyyət</small></div><div><b>'+(s.d||0)+'</b><small>🤝 Bərabərlik</small></div><div><b>'+r+'%</b><small>📈 Qələbə %</small></div></div>';}
 document.addEventListener('input',function(e){var i=e.target;if(!i||!i.getAttribute||!i.getAttribute('data-bom-nc'))return;C['bomNc'+i.getAttribute('data-bom-nc')]=i.value;var p=document.getElementById('bom-ns-prev');if(p)p.style.backgroundImage='linear-gradient(90deg,'+(C.bomNc1||'#ff4d4d')+','+(C.bomNc2||'#4d7cff')+','+(C.bomNc1||'#ff4d4d')+')';},true);
 document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-bom-nctoggle],[data-bom-nc-apply],[data-bom-nsel],[data-bom-sellmode]');if(!t)return;e.stopPropagation();e.preventDefault();
