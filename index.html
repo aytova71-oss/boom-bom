@@ -2579,21 +2579,26 @@ function authAct(k){
       toast((k==='google'?'Google':'Facebook')+' hesabı artıq bağlıdır ✓',2500,true);
       return;
     }
-    if(current){
-      current.linkWithRedirect(provider).catch(function(e){
-        console.warn(k+' link:',e);
-        if(e&&['auth/credential-already-in-use','auth/email-already-in-use','auth/account-exists-with-different-credential'].indexOf(e.code)>-1){
-          fbAuth.signInWithRedirect(provider).catch(function(x){
-            console.warn(x);toast((k==='google'?'Google':'Facebook')+' hesabına giriş alınmadı: '+(x.message||x.code),5000);
-          });
-        }else toast((k==='google'?'Google':'Facebook')+' hesabını bağlamaq alınmadı: '+(e.message||e.code),5000);
-      });
-    }else{
-      fbAuth.signInWithRedirect(provider).catch(function(e){
-        console.warn(k+' redirect:',e);
-        toast((k==='google'?'Google':'Facebook')+' yönləndirməsi başlamadı: '+(e.message||e.code),5000);
-      });
-    }
+    var label=k==='google'?'Google':'Facebook';
+    var handle=function(res){if(res&&res.user)fbHandleUser(res.user);};
+    var viaRedirect=function(){
+      var go=current?current.linkWithRedirect(provider):fbAuth.signInWithRedirect(provider);
+      go.catch(function(e){console.warn(k+' redirect:',e);toast(label+' yönləndirməsi başlamadı: '+(e&&(e.message||e.code)),5000);});
+    };
+    var switchAcc=function(e){
+      var p=(e&&e.credential)?fbAuth.signInWithCredential(e.credential):fbAuth.signInWithPopup(provider);
+      return p.then(handle);
+    };
+    (current?current.linkWithPopup(provider):fbAuth.signInWithPopup(provider)).then(handle).catch(function(e){
+      var c=e&&e.code;console.warn(k+' popup:',e);
+      if(['auth/credential-already-in-use','auth/email-already-in-use','auth/account-exists-with-different-credential'].indexOf(c)>-1){
+        switchAcc(e).catch(function(x){toast(label+' hesabına giriş alınmadı: '+(x&&(x.message||x.code)),5000);});
+      }else if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'||c==='auth/web-storage-unsupported'){
+        viaRedirect();
+      }else if(c==='auth/popup-closed-by-user'||c==='auth/cancelled-popup-request'){
+        toast('Giriş ləğv edildi',2000);
+      }else toast(label+' girişi alınmadı: '+(e&&(e.message||e.code)),5000);
+    });
     return;
   }
   if(k==='out'){
